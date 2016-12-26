@@ -7,6 +7,8 @@
 /**********************************************************************/
 
 #include"atpg.h"
+#include"miscell.h"
+
 
 #ifdef MAIN
 
@@ -18,6 +20,7 @@ wptr *cktout_f0;           /* output wire list */
 wptr *cktout_f1;           /* output wire list */
 wptr hash_wlist[HASHSIZE]; /* hashed wire list */
 nptr hash_nlist[HASHSIZE]; /* hashed node list */
+fptr *det_flist;           /* detection fault list */
 int ncktwire;              /* total number of wires in the circuit */
 int ncktwire_f0;           /* total number of wires in the circuit */
 int ncktwire_f1;           /* total number of wires in the circuit */
@@ -31,8 +34,9 @@ int ncktout_f1;            /* number of primary outputs */
 int in_vector_no;          /* number of test vectors generated */
 int fsim_only;             /* flag to indicate fault simulation only */
 int tdfsim_only;           /* flag to indicate transition delay fault simulation only */
-int tdfatpg_only;           /* flag to indicate transition delay fault simulation only */
+int tdfatpg_only;          /* flag to indicate transition delay fault simulation only */
 int sim_vectors;           /* number of simulation vectors */
+int detection_num;         /* number of detection*/
 char **vectors;            /* vector set */
 
 #else
@@ -45,6 +49,7 @@ extern wptr *cktout_f0;              /* output wire list */
 extern wptr *cktout_f1;              /* output wire list */
 extern wptr hash_wlist[HASHSIZE]; /* hashed wire list */
 extern nptr hash_nlist[HASHSIZE]; /* hashed node list */
+extern fptr *det_flist;           /* detection fault list */
 extern int ncktwire;              /* total number of wires in the circuit */
 extern int ncktwire_f0;              /* total number of wires in the circuit */
 extern int ncktwire_f1;              /* total number of wires in the circuit */
@@ -60,6 +65,7 @@ extern int fsim_only;             /* flag to indicate fault simulation only */
 extern int tdfsim_only;           /* flag to indicate transition delay fault simulation only */
 extern int tdfatpg_only;           /* flag to indicate transition delay fault simulation only */
 extern int sim_vectors;           /* number of simulation vectors */
+extern int detection_num;          /* number of detection*/
 extern char **vectors;            /* vector set */
 
 #endif

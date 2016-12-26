@@ -32,7 +32,8 @@ struct WIRE {
     int fault_flag;        /* indicates the fault-injected bit position, for pfedfs */
     int wlist_index;       /* index into the sorted_wlist array */
 
-    wptr pvspi             /* previous pi for second pattern atpg */
+    wptr pvspi;             /* previous pi for second pattern atpg */
+    wptr nxtpi;             /* previous pi for second pattern atpg */
 };
 
 // a node is a gate
@@ -53,17 +54,18 @@ struct NODE {
 #define HASHSIZE 3911
 
 /* types of gate */
-#define NOT       1
-#define NAND      2
-#define AND       3
-#define INPUT     4
-#define NOR       5
-#define OR        6
-#define OUTPUT    8
-#define XOR      11
-#define BUF      17
-#define EQV	      0	/* XNOR gate */
-#define SCVCC    20
+#define NOT             1
+#define NAND            2
+#define AND             3
+#define INPUT           4
+#define NOR             5
+#define OR              6
+#define OUTPUT          8
+#define EXOUTPUT        9
+#define XOR            11
+#define BUF            17
+#define EQV	            0	/* XNOR gate */
+#define SCVCC          20
 
 /* possible value for wire flag */
 #define SCHEDULED       1
