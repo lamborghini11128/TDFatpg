@@ -197,7 +197,8 @@ podem_frame01(fault, current_backtracks)
 
     register wptr wpi; // points to the PI currently being assigned
     register wptr decision_tree; // the top of  LIFO stack of design_tree
-    register wptr wtemp,wfault;    
+    register wptr wtemp,wfault; 
+    register pptr p, ptemp;
     wptr test_possible_frame01();
     wptr fault_evaluate_frame01();
     long rand();
@@ -335,14 +336,31 @@ again:  if (wpi) {
     if (find_test) {
         /* normally, we want one pattern per fault */
         if (total_attempt_num == 1) {
-
+            ptemp = fault -> piassign;
             for (i = 0; i < ncktin; i++) {
                 switch (cktin[i]->value) {
                     case 0:
                     case 1: break;
                     case D: cktin[i]->value = 1; break;
                     case B: cktin[i]->value = 0; break;
-                    case U: cktin[i]->value = rand()&01; break; // random fill U
+                    //case U: cktin[i]->value = rand()&01; break; // random fill U
+                    case U: break; //cktin[i]->value = rand()&01; break; // random fill U
+                }
+                if( cktin[i] -> value == U )
+                {
+                    if( !compression ) 
+                        cktin[i]->value = rand()&01; // random fill U
+                }
+                else{
+                    p = ALLOC(1, struct PIASSIGN);
+                    p -> index_value = i * 2 + cktin[i] -> value;
+                
+                    if( ptemp )
+                        ptemp -> pnext = p;
+                    else
+                        fault -> piassign = p;
+                    
+                    ptemp = p;
                 }
             }
             display_io();

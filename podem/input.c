@@ -546,10 +546,9 @@ input_frame01(infile)
     fprintf(stdout,"#number of outputs = %d\n",ncktout);
     fprintf(stdout,"#number of gates = %d\n",ncktnode);
     fprintf(stdout,"#number of wires = %d\n",ncktwire);
-    //if (debug) 
-    display_circuit();
+    if (debug) 
+      display_circuit();
 
-    printf( "CHECK\n" );
 }/* end of input */
 
 

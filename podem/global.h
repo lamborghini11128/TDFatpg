@@ -37,6 +37,7 @@ int tdfsim_only;           /* flag to indicate transition delay fault simulation
 int tdfatpg_only;          /* flag to indicate transition delay fault simulation only */
 int sim_vectors;           /* number of simulation vectors */
 int detection_num;         /* number of detection*/
+int compression;           /* flag to indicate perform compression */
 char **vectors;            /* vector set */
 
 #else
@@ -66,6 +67,7 @@ extern int tdfsim_only;           /* flag to indicate transition delay fault sim
 extern int tdfatpg_only;           /* flag to indicate transition delay fault simulation only */
 extern int sim_vectors;           /* number of simulation vectors */
 extern int detection_num;          /* number of detection*/
+extern int compression;           /* flag to indicate perform compression */
 extern char **vectors;            /* vector set */
 
 #endif
