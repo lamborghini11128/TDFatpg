@@ -183,6 +183,8 @@ generate_fault_list_frame01()
                 n = w->onode[j];
                 if( n -> frame == 0 )
                     continue;
+                if( n -> type == NOT ||  n -> type == BUF )
+                    continue;
 
                 if (!(f = ALLOC(1,struct FAULT))) error("No more room!");
                 f->node = n;
@@ -219,34 +221,37 @@ generate_fault_list_frame01()
         }
 
         /* for each gate, create a gate output stuck-at zero (SA0) fault */
-        if (!(f = ALLOC(1,struct FAULT))) error("No more room!");
-        f->node = n;
-        f->io = GO;
-        f->fault_type = STUCK0;
-        f->to_swlist = i;
-        f -> eqv_fault_num = 1;
-        num_of_gate_fault += f->eqv_fault_num; // accumulate total fault count
-        f->pnext = first_fault;  // insert into the fault list
-        f->pnext_undetect = first_fault; // initial undetected fault list contains all faults
-        first_fault = f;
+        if( n -> type != NOT && n -> type != BUF )
+        {
+            if (!(f = ALLOC(1,struct FAULT))) error("No more room!");
+            f->node = n;
+            f->io = GO;
+            f->fault_type = STUCK0;
+            f->to_swlist = i;
+            f -> eqv_fault_num = 1;
+            num_of_gate_fault += f->eqv_fault_num; // accumulate total fault count
+            f->pnext = first_fault;  // insert into the fault list
+            f->pnext_undetect = first_fault; // initial undetected fault list contains all faults
+            first_fault = f;
 
-        /* for each gate, create a gate output stuck-at one (SA1) fault */
-        if (!(f = ALLOC(1,struct FAULT))) error("No more room!");
-        f->node = n;
-        f->io = GO;
-        f->fault_type = STUCK1;
-        f->to_swlist = i;
-        f->eqv_fault_num = 1;
-        num_of_gate_fault += f->eqv_fault_num;
-        f->pnext = first_fault;
-        f->pnext_undetect = first_fault;
-        first_fault = f;
-
+            /* for each gate, create a gate output stuck-at one (SA1) fault */
+            if (!(f = ALLOC(1,struct FAULT))) error("No more room!");
+            f->node = n;
+            f->io = GO;
+            f->fault_type = STUCK1;
+            f->to_swlist = i;
+            f->eqv_fault_num = 1;
+            num_of_gate_fault += f->eqv_fault_num;
+            f->pnext = first_fault;
+            f->pnext_undetect = first_fault;
+            first_fault = f;
+        }
         /*if w has multiple fanout branches,   */
         if (w->nout > 1) {
             for (j = 0 ; j < w->nout; j++) {
                 n = w->onode[j];
-
+                if( n -> type == NOT || n -> type == BUF )
+                    continue; 
                 if (!(f = ALLOC(1,struct FAULT))) error("No more room!");
                 f->node = n;
                 f->io = GI;
