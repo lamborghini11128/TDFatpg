@@ -41,9 +41,10 @@ static  forward_imply(wptr);
 
 
 /* generates a single pattern for a single fault */
-podem_X(fault, current_backtracks)
+podem_X(fault, current_backtracks , isPrimaryFault)
     fptr fault;
     int *current_backtracks;
+    int isPrimaryFault;
 {
     register int i,j;
     register nptr n;
@@ -61,8 +62,22 @@ podem_X(fault, current_backtracks)
     // XXX: set default value and (sim?)
     // OAO: no need to load prev. pattern
     /* initialize all circuit wires to unknown */
-    for (i = 0; i < ncktwire; i++) {
-        sort_wlist[i]->value = U;
+    if (isPrimaryFault){
+        for (i = 0; i < ncktwire; i++) {
+            sort_wlist[i]->value = U;
+        }
+    }
+    else{
+        // OAO: secondary fault --> preserve previous assiments
+        // OAO: maybe we dont need this block
+        for (i = 0; i < ncktwire; i++) {
+            wptr ww = sort_wlist[i];
+            if ( ww->flag & INPUT )
+                ww->flag |= CHANGED;
+            else
+                ww->value = U;
+        }
+        sim();
     }
     no_of_backtracks = 0;
     find_test = FALSE;
@@ -192,7 +207,7 @@ again:  if (wpi) {
                     case D: cktin[i]->value = 1; break;
                     case B: cktin[i]->value = 0; break;
                     // XXX: comment this line?
-                    case U: cktin[i]->value = rand()&01; break; // random fill U
+                    // case U: cktin[i]->value = rand()&01; break; // random fill U
                 }
             }
             display_io();

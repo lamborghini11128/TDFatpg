@@ -342,8 +342,8 @@ set_output_frame01()
                 exit(-1);
             }
         }
-        temp_cktout[ncktout] = w;
-        ncktout++;
+        //temp_cktout[ncktout] = w;
+        //ncktout++;
         ncktout_f0++;
 
         // frame 1 output
@@ -641,9 +641,10 @@ create_structure_frame01()
         else
         {
             cktin[i] = temp_cktin[i - 1];
-            cktin[i] -> flag |= INPUT;
             cktin[i] -> pvspi = w_temp;
+            w_temp   -> nxtpi = cktin[i];
         }
+        cktin[i] -> flag |= INPUT;
         w_temp = cktin[i];
     }
     cfree(temp_cktin);
@@ -665,12 +666,12 @@ create_structure_frame01()
                 if( n -> iwire[j] -> flag & INPUT )
                 {
                     w = n -> iwire[j];    
-                    //printf( "%s %s \n", n -> fnext -> name, w -> pvspi -> name);
                     w_temp = n -> fnext -> iwire[j];
+                    //printf( "replace %s with  %s \n", n -> fnext -> iwire[j] -> name, w -> pvspi -> name);
                     n -> fnext -> iwire[j] = w -> pvspi;
                     w -> pvspi -> nout ++;
-                    w_temp -> nin = 0;
-                    w_temp -> nout = 0;
+                    //w_temp -> nin = 0;
+                    w_temp -> nout --;
 
                 }
             }

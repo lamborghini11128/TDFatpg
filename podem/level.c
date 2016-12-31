@@ -5,7 +5,7 @@
 /*           last update : 1/27/1987                                  */
 /**********************************************************************/
 
-// something
+
 #include <stdio.h>
 #include "global.h"
 #include "miscell.h"

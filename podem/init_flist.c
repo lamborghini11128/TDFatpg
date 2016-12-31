@@ -152,6 +152,160 @@ generate_fault_list()
     return;  
 }/* end of generate_fault_list */
 
+/* the way of fault collapsing is different from what we teach in class
+   need modification */
+generate_fault_list_frame01()
+{
+    int i,j,k;
+    wptr w;
+    nptr n;
+    fptr f;
+    fptr f_prev;
+    int fault_num;  
+    void display_fault();
+
+    first_fault = NIL(struct FAULT);  // start of fault list 
+    num_of_gate_fault = 0; // totle number of faults in the whole circuit
+    if(!(det_flist = ALLOC(detection_num, struct FAULT))) error("No more room!"); // bulid dection fault list
+    for ( i = 0; i < detection_num; i++ )
+        det_flist[i] = NIL(struct FAULT);
+
+    /* walk through every wire in the circuit*/
+    for (i = ncktwire - 1; i >= 0; i--) {
+        w = sort_wlist[i]; // each wire w
+        n = w->inode[0]; // w is the gate n output wire
+        if( n -> frame == 0 )
+        {
+            if( !(w -> flag & INPUT) )
+                continue;
+            for( j = 0; j < w -> nout; j++ )
+            {
+                n = w->onode[j];
+                if( n -> frame == 0 )
+                    continue;
+
+                if (!(f = ALLOC(1,struct FAULT))) error("No more room!");
+                f->node = n;
+                f->io = GI;
+                f->fault_type = STUCK0;
+                f->to_swlist = i;
+                f->eqv_fault_num = 1;
+                /* f->index is the index number of gate input, 
+                   which GI fault is associated with*/
+                for (k = 0; k < n->nin; k++) {  
+                    if (n->iwire[k] == w) f->index = k;
+                }
+                num_of_gate_fault++;
+                f->pnext = first_fault;
+                f->pnext_undetect = first_fault;
+                first_fault = f;
+
+                /* create SA1 for AND NAND EQV XOR gate inputs  */
+                if (!(f = ALLOC(1,struct FAULT))) error("Room more room!");
+                f->node = n;
+                f->io = GI;
+                f->fault_type = STUCK1;
+                f->to_swlist = i;
+                f->eqv_fault_num = 1;
+                for (k = 0; k < n->nin; k++) {
+                    if (n->iwire[k] == w) f->index = k;
+                }
+                num_of_gate_fault++;
+                f->pnext = first_fault;
+                f->pnext_undetect = first_fault;
+                first_fault = f;
+            }
+            continue;
+        }
+
+        /* for each gate, create a gate output stuck-at zero (SA0) fault */
+        if (!(f = ALLOC(1,struct FAULT))) error("No more room!");
+        f->node = n;
+        f->io = GO;
+        f->fault_type = STUCK0;
+        f->to_swlist = i;
+        f -> eqv_fault_num = 1;
+        num_of_gate_fault += f->eqv_fault_num; // accumulate total fault count
+        f->pnext = first_fault;  // insert into the fault list
+        f->pnext_undetect = first_fault; // initial undetected fault list contains all faults
+        first_fault = f;
+
+        /* for each gate, create a gate output stuck-at one (SA1) fault */
+        if (!(f = ALLOC(1,struct FAULT))) error("No more room!");
+        f->node = n;
+        f->io = GO;
+        f->fault_type = STUCK1;
+        f->to_swlist = i;
+        f->eqv_fault_num = 1;
+        num_of_gate_fault += f->eqv_fault_num;
+        f->pnext = first_fault;
+        f->pnext_undetect = first_fault;
+        first_fault = f;
+
+        /*if w has multiple fanout branches,   */
+        if (w->nout > 1) {
+            for (j = 0 ; j < w->nout; j++) {
+                n = w->onode[j];
+
+                if (!(f = ALLOC(1,struct FAULT))) error("No more room!");
+                f->node = n;
+                f->io = GI;
+                f->fault_type = STUCK0;
+                f->to_swlist = i;
+                f->eqv_fault_num = 1;
+                /* f->index is the index number of gate input, 
+                   which GI fault is associated with*/
+                for (k = 0; k < n->nin; k++) {  
+                    if (n->iwire[k] == w) f->index = k;
+                }
+                num_of_gate_fault++;
+                f->pnext = first_fault;
+                f->pnext_undetect = first_fault;
+                first_fault = f;
+
+                /* create SA1 for AND NAND EQV XOR gate inputs  */
+                if (!(f = ALLOC(1,struct FAULT))) error("Room more room!");
+                f->node = n;
+                f->io = GI;
+                f->fault_type = STUCK1;
+                f->to_swlist = i;
+                f->eqv_fault_num = 1;
+                for (k = 0; k < n->nin; k++) {
+                    if (n->iwire[k] == w) f->index = k;
+                }
+                num_of_gate_fault++;
+                f->pnext = first_fault;
+                f->pnext_undetect = first_fault;
+                first_fault = f;
+            }
+        }
+    }
+
+    f_prev = NULL;
+    /*walk through all fautls, assign fault_no one by one  */
+    for (f = first_fault, fault_num = 0; f; f = f->pnext, fault_num++) {
+        f -> fault_no = fault_num;
+        f -> det_num  = 0;
+        f -> pprev = f_prev;
+        f_prev = f;
+    }
+    for (f = first_fault, fault_num = 0; f; f = f->pnext, fault_num++) {
+        printf( "fault num %d ", f -> fault_no ); 
+        if( f -> pprev )
+            printf( "prev %d ", f -> pprev -> fault_no );
+
+        if( f -> pnext )
+            printf( "next %d ", f -> pnext -> fault_no ); 
+        printf("\n");
+        display_fault( f );
+        
+    }
+
+    det_flist[0] = first_fault;
+
+//fprintf(stdout,"#number of equivalent faults = %d\n", fault_num);
+return;  
+}/* end of generate_fault_list */
 
 /* computing the actual fault coverage */
 compute_fault_coverage()
@@ -292,6 +446,101 @@ create_dummy_gate()
     } // for i
     return;
 }/* end of create_dummy_gate */
+
+
+/* for each PI and PO in the whole circuit,
+   create a dummy PI gate to feed each PI wire 
+   create a dummy PO gate to feed each PO wire. */
+/* why do we need dummy gate? */
+create_dummy_gate_frame01()
+{
+    register int i,j;
+    register int num_of_dummy;
+    register nptr n,*n2;
+    register wptr w;
+    char sgate[25];
+    char intstring[25];
+    nptr getnode();
+
+    num_of_dummy = 0;
+
+    /* create a dummy PI gate for each PI wire */
+    for (i = 0; i < ncktin; i++) {
+        num_of_dummy++;
+
+        /* the dummy gate name is  "dummay_gate#"  */ 
+        sprintf(intstring, "%d", num_of_dummy); 
+        sprintf(sgate,"dummy_gate%s",intstring);
+
+        /* n is the dummy PI gate, cktin[i]is the original PI wire.  feed n to cktin[i] */ 
+        n = getnode(sgate);
+        n->nout = 1;
+        n->type = INPUT;
+        if (!(n->owire = ALLOC(1,wptr))) error("No more room!");
+        n->owire[0] = cktin[i];
+        n -> frame = 0; /// for tdf atpg
+        if (!(cktin[i]->inode = ALLOC(1,nptr))) error("No more room!");
+        cktin[i]->inode[0] = n;
+        cktin[i]->nin = 1;
+    } // for i
+
+    /* create a dummy PO gate for each PO wire */
+    for (i = 0; i < ncktout; i++) {
+        num_of_dummy++;
+        // for frame 1
+        //  itoa(num_of_dummy,intstring);
+        sprintf(intstring, "%d", num_of_dummy); 
+        sprintf(sgate,"dummy_gate%s",intstring);
+
+        /*  n is the dummy PO gate, cktout[i] is the original PO wire.  feed cktout[i] to n */
+        n = getnode(sgate);
+        n->nin = 1;
+        n->type = OUTPUT;
+        if (!(n->iwire = ALLOC(1,wptr))) error("No more room!");
+        n->iwire[0] = cktout[i];
+        cktout[i]->nout++;
+
+        /* copy the original onode array, insert the dummy gate n */
+        if (!(n2 = ALLOC(cktout[i]->nout,nptr))) error("No more room!");
+        n2[(cktout[i]->nout - 1)] = n;  
+        for (j = 0; j < (cktout[i]->nout - 1); j++) {   
+            n2[j] = cktout[i]->onode[j];
+        }
+
+        /* replace the old onode array */
+        if (cktout[i]->onode) free(cktout[i]->onode);
+        cktout[i]->onode = n2;
+
+        ////  for frame 0
+        //  itoa(num_of_dummy,intstring);
+        sprintf(intstring, "%d", num_of_dummy); 
+        sprintf(sgate,"ex_gate%s",intstring);
+
+        /*  n is the dummy PO gate, cktout[i] is the original PO wire.  feed cktout[i] to n */
+        n = getnode(sgate);
+        n->nin = 1;
+        n->type = EXOUTPUT;
+        if (!(n->iwire = ALLOC(1,wptr))) error("No more room!");
+        w = cktout[i] -> inode[0] -> fnext -> owire[0];
+
+        n->iwire[0] = w;
+        w->nout++;
+
+        /* copy the original onode array, insert the dummy gate n */
+        if (!(n2 = ALLOC(w->nout,nptr))) error("No more room!");
+        n2[(w->nout - 1)] = n;  
+        for (j = 0; j < (w->nout - 1); j++) {   
+            n2[j] = w->onode[j];
+        }
+
+        /* replace the old onode array */
+        if (w->onode) free(w->onode);
+        w->onode = n2;
+    } // for i
+    return;
+}/* end of create_dummy_gate */
+
+
 
 
 /*

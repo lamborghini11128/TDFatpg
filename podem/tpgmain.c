@@ -25,7 +25,7 @@ char *argv[];
 
     strcpy(inpFile, "xxxx");
     i = 1;
-
+    detection_num = 1;
 /* parse the input switches & arguments */
     while(i< argc) {
         if (strcmp(argv[i],"-anum") == 0) {
@@ -50,6 +50,10 @@ char *argv[];
             tdfatpg_only=TRUE;
             i+=1;
 		}
+	    else if (strcmp(argv[i],"-ndet") == 0) {
+			detection_num = atoi( argv[i+1]);
+            i+=2;
+	    }
 
         else if (argv[i][0] == '-') {
             j = 1;
@@ -79,6 +83,7 @@ char *argv[];
     else
         input(inpFile); // input.c
 
+    printf("%d detection\n ", detection_num);
     printf("Finish input\n");
 /* if vector file is provided, read it */
     if(vetFile[0] != '0') { read_vectors(vetFile); }
@@ -93,11 +98,19 @@ char *argv[];
     printf("Finish rearrange gate \n");
     //timer(stdout,"for rearranging gate inputs",filename);
 
-    create_dummy_gate(); //init_flist.c
+    if( tdfatpg_only )
+        create_dummy_gate_frame01(); //init_flist.c
+    else
+        create_dummy_gate(); //init_flist.c
+
     printf("Finish create_dummy_gate \n");
     //timer(stdout,"for creating dummy nodes",filename);
 
-    generate_fault_list(); //init_flist.c
+    if( tdfatpg_only )
+        generate_fault_list_frame01(); //init_flist.c
+    else
+        generate_fault_list(); //init_flist.c
+
     printf("Finish generate fault list \n");
     //timer(stdout,"for generating fault list",filename);
 
