@@ -31,7 +31,7 @@ display.o : atpg.h miscell.h
 	gcc $(CFLAGS) -c display.c
 tdfsim.o : atpg.h miscell.h
 	gcc $(CFLAGS) -c tdfsim.c
-compression.o : atpg.h miscell.h
+compression.o : atpg.h miscell.h compression.cpp
 	g++ $(CFLAGS) -c compression.cpp
 clean:
 	rm *.o
