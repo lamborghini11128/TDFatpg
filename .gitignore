@@ -31,3 +31,6 @@
 # Debug files
 *.dSYM/
 *.su
+
+podem/atpg
+*.swp

@@ -2,7 +2,7 @@
 
 CFLAGS = -Wall -g 
 
-FILES = tpgmain.o input.o level.o sim.o podem.o test.o init_flist.o faultsim.o display.o tdfsim.o rchctrl.o
+FILES = tpgmain.o input.o level.o sim.o podem.o test.o init_flist.o faultsim.o display.o tdfsim.o rchctrl.o podem_X.o
 
 atpg : $(FILES) 
 	gcc $(CFLAGS) $(FILES) -lm -o atpg
@@ -19,6 +19,8 @@ sim.o : atpg.h miscell.h logic_tbl.h
 	gcc $(CFLAGS) -c sim.c
 podem.o : atpg.h miscell.h
 	gcc $(CFLAGS) -c podem.c
+podem_X.o : atpg.h miscell.h podem_X.c
+	gcc $(CFLAGS) -c podem_X.c
 init_flist.o : atpg.h miscell.h
 	gcc $(CFLAGS) -c init_flist.c
 faultsim.o : atpg.h miscell.h
