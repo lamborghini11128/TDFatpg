@@ -32,7 +32,7 @@ struct WIRE {
     int fault_flag;        /* indicates the fault-injected bit position, for pfedfs */
     int wlist_index;       /* index into the sorted_wlist array */
 
-    wptr pvspi             /* previous pi for second pattern atpg */
+    wptr pvspi;             /* previous pi for second pattern atpg */
 };
 
 // a node is a gate

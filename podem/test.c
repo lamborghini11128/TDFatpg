@@ -9,7 +9,7 @@ test()
     register fptr undetect_fault;
     register fptr f,fault_under_test, ftemp;
     fptr fault_sim_a_vector(), fault_simulate_vectors();
-	fptr transition_delay_fault_simulation();
+    fptr transition_delay_fault_simulation();
     int podem();
     int current_detect_num,total_detect_num, i;
     int total_no_of_backtracks = 0;  // accumulative number of backtracks
@@ -33,9 +33,9 @@ test()
         fprintf(stdout,"\n");
         return;
     }// if fsim only
-	
-	/* tdFsim only mode */
-	if(tdfsim_only)
+
+    /* tdFsim only mode */
+    if(tdfsim_only)
     {
         transition_delay_fault_simulation(vectors,sim_vectors,undetect_fault,&total_detect_num);
         printf("end of test.c\n");
@@ -47,20 +47,20 @@ test()
     while(fault_under_test) {
         switch(podem(fault_under_test,&current_backtracks)) {
             case TRUE:
-	      /*by defect, we want only one pattern per fault */
-	      /*run a fault simulation, drop ALL detected faults */
+                /*by defect, we want only one pattern per fault */
+                /*run a fault simulation, drop ALL detected faults */
                 if (total_attempt_num == 1) {
                     undetect_fault = fault_sim_a_vector(undetect_fault,&current_detect_num);
                     total_detect_num += current_detect_num;
                 }
                 /* If we want mutiple petterns per fault, 
-		 * NO fault simulation.  drop ONLY the fault under test */ 
+                 * NO fault simulation.  drop ONLY the fault under test */ 
                 else {
                     fault_under_test->detect = TRUE;
-		    /* walk through the undetected fault list */
+                    /* walk through the undetected fault list */
                     for (f = undetect_fault; f; f = f->pnext_undetect) {
                         if (f == fault_under_test) {
-			  /* drop fault_under_test */
+                            /* drop fault_under_test */
                             if (f == undetect_fault)
                                 undetect_fault = undetect_fault->pnext_undetect;
                             else {  
@@ -73,12 +73,12 @@ test()
                 }
                 in_vector_no++;
                 break;
-	    case FALSE:  // 
+            case FALSE:  // 
                 fault_under_test->detect = REDUNDANT;
                 no_of_redundant_faults++;
                 break;
 
-	    case MAYBE:  //
+            case MAYBE:  //
                 no_of_aborted_faults++;
                 break;
         }
