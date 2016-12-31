@@ -2,7 +2,7 @@
 
 CFLAGS = -Wall -g 
 
-FILES = tpgmain.o input.o level.o sim.o podem.o test.o init_flist.o faultsim.o display.o tdfsim.o rchctrl.o podem_X.o
+FILES = tpgmain.o input.o level.o sim.o podem.o test.o init_flist.o faultsim.o display.o tdfsim.o rchctrl.o podem_X.o compression.o
 
 atpg : $(FILES) 
 	gcc $(CFLAGS) $(FILES) -lm -o atpg
@@ -31,6 +31,8 @@ display.o : atpg.h miscell.h
 	gcc $(CFLAGS) -c display.c
 tdfsim.o : atpg.h miscell.h
 	gcc $(CFLAGS) -c tdfsim.c
+compression.o : atpg.h miscell.h
+	gcc $(CFLAGS) -c compression.c
 clean:
 	rm *.o
 

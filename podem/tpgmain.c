@@ -120,7 +120,9 @@ char *argv[];
     //timer(stdout,"for generating fault list",filename);
 
     test(); //test.c
-	//if(!tdfsim_only){
+	
+    test_compression();
+    //if(!tdfsim_only){
 		compute_fault_coverage(); //init_flist.c
 	//}
     
