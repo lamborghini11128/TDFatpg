@@ -50,7 +50,12 @@ char *argv[];
             tdfatpg_only=TRUE;
             i+=1;
 		}
+        else if (strcmp(argv[i],"-compression") == 0) {
+            compression = TRUE;
+            i+=1;
+		}
 	    else if (strcmp(argv[i],"-ndet") == 0) {
+            compression = TRUE;
 			detection_num = atoi( argv[i+1]);
             i+=2;
 	    }
@@ -83,19 +88,19 @@ char *argv[];
     else
         input(inpFile); // input.c
 
-    printf("%d detection\n ", detection_num);
-    printf("Finish input\n");
+    printf("%d detection\n", detection_num);
+   // printf("Finish input\n");
 /* if vector file is provided, read it */
     if(vetFile[0] != '0') { read_vectors(vetFile); }
     //timer(stdout,"for reading in circuit",filename);
-    printf("Finish read vectors\n");
+    //printf("Finish read vectors\n");
 
     level_circuit();  // level.c
-    printf("Finish level\n");
+    //printf("Finish level\n");
     //timer(stdout,"for levelling circuit",filename);
 
     rearrange_gate_inputs();  //level.c
-    printf("Finish rearrange gate \n");
+    //printf("Finish rearrange gate \n");
     //timer(stdout,"for rearranging gate inputs",filename);
 
     if( tdfatpg_only )
@@ -103,7 +108,7 @@ char *argv[];
     else
         create_dummy_gate(); //init_flist.c
 
-    printf("Finish create_dummy_gate \n");
+    //printf("Finish create_dummy_gate \n");
     //timer(stdout,"for creating dummy nodes",filename);
 
     if( tdfatpg_only )
@@ -111,7 +116,7 @@ char *argv[];
     else
         generate_fault_list(); //init_flist.c
 
-    printf("Finish generate fault list \n");
+    //printf("Finish generate fault list \n");
     //timer(stdout,"for generating fault list",filename);
 
     test(); //test.c

@@ -308,7 +308,8 @@ fault_sim_a_vector_frame01(flist,num_of_current_detect)
     fptr f,ftemp, f_detected;
     int fault_type;
     register int i,j,k,start_wire_index, l;
-    register int num_of_fault;  
+    register int num_of_fault; 
+    pptr p, ptemp, plist;
     int fault_sim_evaluate();
     wptr get_faulty_wire();
     int sim();
@@ -575,20 +576,76 @@ fault_sim_a_vector_frame01(flist,num_of_current_detect)
 
 /* the following two loops are both for fault dropping  */  
 /* drop detected faults from the FRONT of the undetected fault list */
-    while( f_detected ) {
-        remove_fault( f_detected, 0 );
-        (*num_of_current_detect) += f_detected -> eqv_fault_num;
-        f = f_detected -> pnext_detected;
-        f_detected -> pnext_detected = NULL;
-        f_detected  = f;
+    if( compression )
+    {
+        // if flist pi assignment detect other fault and use less pi, 
+        // replace the other fault's pi assignment with flist's
+        int assign_num_origin = 0;
+        int assign_num_fault = 0;
+
+        for( p = flist -> piassign; p; p = p -> pnext )
+            assign_num_origin ++; 
+
+        while( f_detected ){
+            assign_num_fault = 0;
+            for( p = f_detected -> piassign; p; p = p -> pnext )
+                assign_num_fault ++; 
+            if( assign_num_origin < assign_num_fault || !f_detected -> piassign )
+            {
+                for( plist = f_detected -> piassign; plist; plist = ptemp )
+                {
+                    ptemp = plist -> pnext;
+                    cfree( plist ); 
+                }
+
+                f_detected -> piassign = NULL;
+                p = f_detected -> piassign;
+
+                for( plist = flist -> piassign; plist; plist = plist -> pnext )
+                {
+                    ptemp = ALLOC(1, struct PIASSIGN);
+                    ptemp -> index_value = plist -> index_value;
+                    
+                    if( p )
+                        p -> pnext = ptemp;
+                    else
+                        f_detected -> piassign = ptemp;
+
+                    p = ptemp;
+                }
+            }
+
+
+            f = f_detected -> pnext_detected;
+            f_detected -> pnext_detected = NULL;
+            f_detected  = f;
+        }
+    
+    }    
+    else
+    {
+        while( f_detected ) {
+            remove_fault( f_detected, 0 );
+            (*num_of_current_detect) += f_detected -> eqv_fault_num;
+            f = f_detected -> pnext_detected;
+            f_detected -> pnext_detected = NULL;
+            f_detected  = f;
+        }
     }
 
 
     f_detected = NIL( struct FAULT );
 
-    for( l = 0; l < detection_num; l++ )
-        if( flist = det_flist[l] )
-            break;
+    if( compression )
+    {
+        flist = flist -> pnext;
+    }
+    else
+    {
+        for( l = 0; l < detection_num; l++ )
+            if( flist = det_flist[l] )
+                break;
+    }
    
    return(flist);
 }/* end of fault_sim_a_vecto */

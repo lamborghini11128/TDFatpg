@@ -118,7 +118,8 @@ test()
             fault_under_test = undetect_fault;
             while( fault_under_test ) {
                 if (!fault_under_test -> test_tried) {
-                    break;
+                    if( !compression || ( compression &&  !fault_under_test -> piassign) )
+                        break;
                 }
 
                 ftemp = fault_under_test -> pnext;
