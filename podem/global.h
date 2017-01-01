@@ -21,6 +21,7 @@ wptr *cktout_f1;           /* output wire list */
 wptr hash_wlist[HASHSIZE]; /* hashed wire list */
 nptr hash_nlist[HASHSIZE]; /* hashed node list */
 fptr *det_flist;           /* detection fault list */
+pptr *plist;               /* pattern under dynamic podem*/ 
 int ncktwire;              /* total number of wires in the circuit */
 int ncktwire_f0;           /* total number of wires in the circuit */
 int ncktwire_f1;           /* total number of wires in the circuit */
@@ -51,6 +52,7 @@ extern wptr *cktout_f1;              /* output wire list */
 extern wptr hash_wlist[HASHSIZE]; /* hashed wire list */
 extern nptr hash_nlist[HASHSIZE]; /* hashed node list */
 extern fptr *det_flist;           /* detection fault list */
+extern pptr *plist;               /* pattern under dynamic podem*/ 
 extern int ncktwire;              /* total number of wires in the circuit */
 extern int ncktwire_f0;              /* total number of wires in the circuit */
 extern int ncktwire_f1;              /* total number of wires in the circuit */

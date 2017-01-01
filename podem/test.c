@@ -2,7 +2,73 @@
 #include "global.h"
 #include "miscell.h"
 
+#define U  2
+
 extern int total_attempt_num;
+
+fptr
+choose_primary_fault()
+{
+    fptr p;
+    int  i;
+    for( i = 0; i < detection_num; i++ )
+    {
+        if( p = det_flist[i] )
+            break;
+    }
+    return p;
+}
+
+fptr
+choose_second_fault( s_fault )
+    fptr s_fault;
+{
+    fptr p;
+    int  i;
+
+    if( p = s_fault -> pnext )
+        return p;
+    else
+    {
+        for( i = s_fault -> det_num + 1; i < detection_num; i++ )
+        {
+            if( p = det_flist[i] )
+                break;
+        }
+    }
+    return p;
+}
+
+// if x number in pi is lower than a threshold return TRUE
+// else return FALSE
+static double threshold = 0.2;
+
+int 
+pi_x_num()
+{
+    int x_num = 0;
+    int i;
+    for( i = 0; i < ncktin; i++ )
+    {
+        if( sort_wlist[i] -> value == U ) 
+            x_num ++;
+    }
+
+    if( (double)x_num / (double) ncktin < threshold )
+    {
+        /// assin all unknown PI and save this pattern in plist
+        for( i = 0; i < ncktin; i++ )
+        {
+            if( sort_wlist[i] -> value == U ) 
+                sort_wlist[i] -> value = rand()&01;
+        }
+        return 1;
+    }
+    else
+        return 0;
+
+    return 1;
+}
 
 test()
 {
@@ -19,6 +85,10 @@ test()
     int display_undetect();
     void display_circuit();
     void display_fault();
+    fptr choose_primary_fault();
+    fptr choose_second_fault();
+    int  pi_x_num();
+    void fault_sim_a_vector_frame01_X();
 
     in_vector_no = 0;
     total_detect_num = 0;
@@ -43,6 +113,101 @@ test()
         printf("end of test.c\n");
         return;
     }
+
+
+    if( tdfatpg_only )
+    {
+        int PrimaryFault = 0;
+        int SecondFault = 0;
+        fptr fault_detect;
+        int i;
+
+        fault_under_test = choose_primary_fault();
+        
+        while( fault_under_test )
+        {
+            //printf( "PrimaryFault %d \n", fault_under_test -> fault_no);
+            
+
+            PrimaryFault = 0;
+            switch(podem_frame01_X(fault_under_test,&current_backtracks, 1)) {
+                case TRUE:
+                    fault_under_test = choose_second_fault( fault_under_test );
+                    PrimaryFault = 1;
+                    break;
+                case FALSE:
+                    //printf("    remove %d \n", fault_under_test -> fault_no);
+                    fault_under_test->detect = REDUNDANT;
+                    fault_under_test->test_tried = TRUE; // deal later
+                    remove_fault( fault_under_test, 1 );
+                    fault_under_test = choose_primary_fault();
+                    PrimaryFault = 0;
+                    break;
+                case MAYBE:
+                    fault_under_test->test_tried = TRUE; // deal later
+                    fault_under_test = choose_second_fault();
+                    PrimaryFault = 0;
+                    break;
+            }
+            
+            if( PrimaryFault )
+            {
+                if( pi_x_num() )
+                {
+                    // fault sim and fault drop 
+                    fault_sim_a_vector_frame01_X(&current_detect_num);
+                    display_io_frame01();
+                    continue;
+                }
+            
+            }
+            else
+                continue;
+
+            /*
+            for( i = 0; i < ncktin; i++ )
+                printf( "%d ", sort_wlist[i] -> value );
+            printf("\n");
+            */
+
+            //second pattern
+            SecondFault = 0;
+            while( fault_under_test )
+            {
+                //printf( "SecondFault %d \n", fault_under_test -> fault_no);
+
+                podem_frame01_X(fault_under_test,&current_backtracks, 0);
+
+                if( pi_x_num() )
+                {
+                    // fault sim and fault drop 
+                    fault_sim_a_vector_frame01_X(&current_detect_num);
+                    display_io_frame01();
+                    SecondFault = 1;
+                    break;
+                }
+
+                fault_under_test = choose_second_fault( fault_under_test );
+            
+            
+            }
+
+            if( !SecondFault )
+            {
+                for( i = 0; i < ncktin; i++ )
+                {
+                    if( sort_wlist[i] -> value == U ) 
+                        sort_wlist[i] -> value = rand()&01;
+                }
+                fault_sim_a_vector_frame01_X(&current_detect_num);
+                display_io_frame01();
+            }
+            fault_under_test = choose_primary_fault();
+
+        }    
+    }
+
+
 
     if( tdfatpg_only )
     {
@@ -217,3 +382,6 @@ test()
     fprintf(stdout,"#total number of backtracks = %d\n",total_no_of_backtracks);
     return;
 }/* end of test */
+
+
+
