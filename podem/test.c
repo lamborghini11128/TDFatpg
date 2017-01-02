@@ -115,7 +115,7 @@ test()
     }
 
 
-    if( tdfatpg_only && compression )
+    if( 0 && tdfatpg_only && compression )
     {
         int PrimaryFault = 0;
         int SecondFault = 0;
@@ -221,7 +221,7 @@ test()
         return;
     }
 
-    if( tdfatpg_only && !compression )
+    if( 0 && tdfatpg_only && !compression )
     {
         int PrimaryFault = 0;
         int SecondFault = 0;
