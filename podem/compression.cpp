@@ -1,22 +1,27 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+extern "C" {
 #include "global.h"
 #include "miscell.h"
+}
 #include <iostream>
 #include <vector>
 #include <climits>
+#include <string>
 
 #define U  2
 #define D  3
 #define B  4 // D_bar
 
 using namespace std;
+typedef std::string String;
 
 extern "C" void test_compression();
 
 
 static void STC_noDict_naive( vector<pptr>* ); 
+static void STC_fault_sim( vector<pptr>* ); 
 
 // Local helper funciton
 static void getPatternList( vector<pptr>* );
@@ -26,35 +31,21 @@ static void delPattern(pptr);
 static pptr mergePattern( pptr, pptr );
 static void printPList( vector<pptr>* );
 static void printPList2( vector<pptr>* );
-static void setCktPiValue( pptr );   
+static void setCktPiValue( String );   
+static int  fault_undropped_num();   
     
 void 
 test_compression()
 {
     // return;
     printf("test_compression()\n");
-    // fptr * det_flist;
-    fptr p1;
-    // int detection_num;
-    // det_flist.size() = detection_num;
-/*
-    for (p1 = det_flist[0]; p1; p1 = p1->pnext)
-    {
-        pptr p2;
-        printf("fault_no:%d --> ", p1->fault_no);
-        for(p2 = p1->piassign; p2; p2 = p2->pnext){
-            printf("[%d]:%d ", p2->index_value/2, p2->index_value%2);
-        }
-        printf("\n");
-    }
-*/
-
     vector<pptr> pList;
     getPatternList( &pList );
     cout << "Initial Test Set\n";
-    printPList2(&pList);
+    //printPList2(&pList);
 
     STC_noDict_naive(&pList);
+    STC_fault_sim(&pList);
 }
 
 void
@@ -73,13 +64,8 @@ STC_noDict_naive( vector<pptr> *v )
         }
     }
     
-    // print all existing pattern
-    printf("remove same\n");
-    printPList2(v); 
-    
     // iteratively merge patterns if they are compatible
     int mergeSuccess;
-    int iterCntr = 0;
     do{
         mergeSuccess = 0;
         for(int i = 0, n = V.size(); i < n-1; ++i){
@@ -96,17 +82,60 @@ STC_noDict_naive( vector<pptr> *v )
                 }
             }
         }
-        printf(" %dth run, %d merged\n", iterCntr++, mergeSuccess);
     }while(mergeSuccess);
     
-    // print all existing pattern
-    printPList2(v);
-    
     // TODO: remove NULL pattern
+    // Let it be.
         
 }
 
-
+void
+STC_fault_sim( vector<pptr> *v )
+{
+    vector<pptr>   &V = (*v);
+    vector<String> patVec;
+    int dummyInt       = 0; 
+    int counter        = 0;
+    int use_num        = INT_MAX;
+    int pattern_num    = 0;
+    // count non-NULL pattern number 
+    for (int i = 0, n = V.size(); i < n; ++i)
+        if(V[i]) ++pattern_num;
+    
+    
+    while( use_num > pattern_num/4 ){
+        use_num = 0;
+        for (int i = 0, n = V.size(); i < n; ++i){
+            if(!V[i]) continue;
+            String s = "";
+            // randomly assign initial pattern;
+            for(int j = 0; j < ncktin; ++j){
+                s += ( rand()&01 ? "1" : "0" );
+            }
+        
+            for(pptr p1 = V[i]; p1; p1 = p1->pnext){
+                s[p1->index_value/2] = ( p1->index_value%2 ? '1' : '0'); 
+            }
+        
+            setCktPiValue(s);
+            if( !fault_sim_a_vector_frame01_Y(&dummyInt) ){
+                patVec.push_back(s);
+                ++use_num;
+            }
+        }
+        cout << "iteration: " << counter++ <<" patSize:"<< patVec.size()<<endl;
+    }
+    
+    // print ALL pattern out
+    for(int i = 0, n = patVec.size(); i < n; ++i){
+        cout<< "T'"; 
+        for (int j = 1; j < ncktin; ++j){
+            cout << patVec[i][j];
+        }
+        cout << " " << patVec[i][0] << "'\n";
+    }
+    cout << "# pattern size = " << patVec.size() << endl;
+}
 void
 delPattern( pptr p )
 {
@@ -169,7 +198,7 @@ mergePattern( pptr p1, pptr p2 )
     pptr pHead = NULL;
     pptr pTmp  = NULL;
     pptr pNew  = NULL;
-    vector<int> merged(ncktin+1, INT_MAX);
+    vector<int> merged(ncktin, INT_MAX);
     for (pptr pp1 = p1; pp1; pp1 = pp1->pnext)
         merged[pp1->index_value/2] = pp1->index_value;
     for (pptr pp2 = p2; pp2; pp2 = pp2->pnext)
@@ -215,10 +244,10 @@ printPList2( vector<pptr>* v )
     for(int i = 0, n = V.size(); i < n; ++i){
         if(V[i] == 0) continue;
         printf("%d >> ", counter++);
-        vector<char> vPattern(ncktin+1, 'x');
+        vector<char> vPattern(ncktin, 'x');
         for (pptr p = V[i]; p; p=p->pnext)
             vPattern[p->index_value/2] =  (p->index_value%2 ? '1':'0' );
-        for (int j = 0; j < ncktin+1; ++j)
+        for (int j = 0; j < ncktin; ++j)
             cout << vPattern[j];
         printf("\n");
     }
@@ -226,14 +255,25 @@ printPList2( vector<pptr>* v )
 
 
 void 
-setCktPiValue( pptr p )
+setCktPiValue( String sPat )
 {
     // initialize all wire value -> Unknown
     for(int i = 0; i < ncktwire; ++i)
         sort_wlist[i]->value = U;
     // insert PIASSIGN value
-    for(pptr pp = p; pp; pp = pp->pnext)
-        sort_wlist[pp->index_value/2]->value = pp->index_value%2;
+    for(int i = 0; i < ncktin; ++i)
+        sort_wlist[i]->value = (sPat[i] == '0' ? 0 : 1 );
+    //for(pptr pp = p; pp; pp = pp->pnext)
+    //    sort_wlist[pp->index_value/2]->value = pp->index_value%2;
 }
 
-
+int fault_undropped_num()
+{
+    int cntr = 0;
+    for(int i = 0; i < detection_num; ++i){
+        for( fptr fp = det_flist[i]; fp; fp = fp->pnext ){
+            ++cntr;
+        }
+    }
+    return cntr;
+}

@@ -332,6 +332,13 @@ test()
             no_of_calls++;
         }
 
+
+        fault_under_test = choose_primary_fault();
+        while(fault_under_test) {
+            fault_under_test -> detect = 0;
+            fault_under_test = choose_second_fault( fault_under_test);
+        }
+
         display_undetect(undetect_fault);
         fprintf(stdout,"\n");
         fprintf(stdout,"#number of aborted faults = %d\n",no_of_aborted_faults);
