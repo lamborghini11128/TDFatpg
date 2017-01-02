@@ -72,4 +72,6 @@ extern int detection_num;          /* number of detection*/
 extern int compression;           /* flag to indicate perform compression */
 extern char **vectors;            /* vector set */
 
+extern int fault_sim_a_vector_frame01_Y(int*);
+
 #endif
