@@ -18,7 +18,8 @@ using namespace std;
 typedef std::string String;
 
 extern "C" void test_compression();
-
+extern "C" void add_pat_ini_test_set();
+extern "C" void initialize_vars();
 
 static void STC_noDict_naive( vector<pptr>* ); 
 static void STC_fault_sim( vector<pptr>* ); 
@@ -33,7 +34,39 @@ static void printPList( vector<pptr>* );
 static void printPList2( vector<pptr>* );
 static void setCktPiValue( String );   
 static int  fault_undropped_num();   
-    
+static vector<pptr> IniTestSet;
+   
+
+void initialize_vars()
+{
+    return;
+    //IniTestSet = new vector<pptr>();
+    //cout<<IniTestSet->size()<<endl;
+    //IniTestSet->push_back( NULL );
+}
+
+void
+add_pat_ini_test_set()
+{
+    //static vector<pptr> IniTestSet;
+    pptr p, ptemp;
+    p = NULL;
+    for( int i = 0; i < ncktin; i++ )
+    {
+        if( sort_wlist[i] -> value != 2 ) // 2 is unknown
+        {
+            ptemp = ALLOC( 1, struct PIASSIGN );
+            ptemp -> index_value = i * 2 + sort_wlist[i] -> value;
+            if( p == NULL ){
+                (IniTestSet).push_back( ptemp );
+            }
+            else
+                p -> pnext = ptemp;
+            p = ptemp;
+        }
+    }
+}
+
 void 
 test_compression()
 {

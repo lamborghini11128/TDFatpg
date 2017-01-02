@@ -119,6 +119,7 @@ char *argv[];
     //printf("Finish generate fault list \n");
     //timer(stdout,"for generating fault list",filename);
 
+    initialize_vars();
     test(); //test.c
 	
     //test_compression();
