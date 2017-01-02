@@ -115,7 +115,7 @@ test()
     }
 
 
-    if( 0 && tdfatpg_only && compression )
+    if( tdfatpg_only && compression )
     {
         int PrimaryFault = 0;
         int SecondFault = 0;
@@ -161,6 +161,7 @@ test()
                     // fault sim and fault drop 
                     fault_sim_a_vector_frame01_X(&current_detect_num);
                     display_io_frame01();
+                    in_vector_no++;
                     continue;
                 }
             
@@ -187,6 +188,7 @@ test()
                     // fault sim and fault drop 
                     fault_sim_a_vector_frame01_X(&current_detect_num);
                     display_io_frame01();
+                    in_vector_no++;
                     SecondFault = 1;
                     break;
                 }
@@ -205,6 +207,7 @@ test()
                 }
                 fault_sim_a_vector_frame01_X(&current_detect_num);
                 display_io_frame01();
+                in_vector_no++;
             }
 
             /*
@@ -221,7 +224,7 @@ test()
         return;
     }
 
-    if( 0 && tdfatpg_only && !compression )
+    if( tdfatpg_only && !compression )
     {
         int PrimaryFault = 0;
         int SecondFault = 0;
@@ -268,9 +271,11 @@ test()
                 }    
                 fault_sim_a_vector_frame01_X(&current_detect_num);
                 display_io_frame01();
+                in_vector_no++;
                 fault_under_test = choose_primary_fault();
             }
-        }    
+        }   
+        return;
     }
 
 

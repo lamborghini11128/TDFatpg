@@ -55,7 +55,7 @@ char *argv[];
             i+=1;
 		}
 	    else if (strcmp(argv[i],"-ndet") == 0) {
-            compression = TRUE;
+            //compression = TRUE;
 			detection_num = atoi( argv[i+1]);
             i+=2;
 	    }
@@ -121,7 +121,7 @@ char *argv[];
 
     test(); //test.c
 	
-    test_compression();
+    //test_compression();
     //if(!tdfsim_only){
 		compute_fault_coverage(); //init_flist.c
 	//}
