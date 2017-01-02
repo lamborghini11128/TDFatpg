@@ -364,7 +364,8 @@ again:  if (wpi) {
                     ptemp = p;
                 }
             }
-            display_io();
+            // XXX XXX XXX
+            // display_io();
         }
         else fprintf(stdout, "\n");  // do not random fill when multiple patterns per fault
         return(TRUE);
