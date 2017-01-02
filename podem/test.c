@@ -281,58 +281,36 @@ test()
 
         //display_circuit();
         while(fault_under_test) {
-
+            
+            if( fault_under_test -> test_tried || fault_under_test -> detect == TRUE ) 
+            {
+                fault_under_test = choose_second_fault( fault_under_test );
+                continue;
+            }
             //display_fault( fault_under_test ); 
             switch(podem_frame01(fault_under_test,&current_backtracks)) {
                 case TRUE:
-                    //printf("   TRUE %d\n", fault_under_test -> fault_no);
                     /*run a fault simulation, drop ALL detected faults */
-                    if (total_attempt_num == 1) {
-                        //undetect_fault = fault_sim_a_vector(undetect_fault,&current_detect_num);
-                        undetect_fault = fault_sim_a_vector_frame01(undetect_fault,&current_detect_num);
-                        total_detect_num += current_detect_num;
-                    }
-                    /* If we want mutiple petterns per fault, 
-                     * NO fault simulation.  drop ONLY the fault under test */ 
-                    else {
-                        fault_under_test->detect = TRUE;
-                        /* walk through the undetected fault list */
-                        for (f = undetect_fault; f; f = f->pnext_undetect) {
-                            if (f == fault_under_test) {
-                                /* drop fault_under_test */
-                                if (f == undetect_fault)
-                                    undetect_fault = undetect_fault->pnext_undetect;
-                                else {  
-                                    ftemp->pnext_undetect = f->pnext_undetect;
-                                }
-                                break;
-                            }
-                            ftemp = f;
-                        }
-                    }
-                    in_vector_no++;
+                    fault_sim_a_vector_frame01( fault_under_test ,&current_detect_num);
+                    undetect_fault = choose_second_fault( fault_under_test );
+                    total_detect_num += current_detect_num;
                     break;
                 case FALSE:  // 
                     fault_under_test->detect = REDUNDANT;
                     no_of_redundant_faults++;
                     fault_under_test->test_tried = TRUE; // deal later
-                    undetect_fault = fault_under_test -> pnext;
-                    if( !undetect_fault )
-                    {
-                        for( i = fault_under_test -> det_num + 1; i < detection_num; i++ )
-                            if( undetect_fault = det_flist[i] )
-                                break;
-                    }
+                    undetect_fault = choose_second_fault( fault_under_test );
                     remove_fault( fault_under_test, 1 );
 
                     break;
 
                 case MAYBE:  //
-                    //printf("   MAYBE\n");
                     no_of_aborted_faults++;
                     fault_under_test->test_tried = TRUE; // deal later
+                    undetect_fault = choose_second_fault( fault_under_test );
                     break;
             }
+            fault_under_test = undetect_fault;
 /*
             for( i = 0 ; i < detection_num; i++ )
             {
@@ -345,23 +323,6 @@ test()
 */
 
 
-            fault_under_test = undetect_fault;
-            while( fault_under_test ) {
-                if (!fault_under_test -> test_tried) {
-                    if( !compression || ( compression &&  !fault_under_test -> piassign) )
-                        break;
-                }
-
-                ftemp = fault_under_test -> pnext;
-
-                if( !ftemp )
-                {
-                    for( i = f -> det_num + 1; i < detection_num; i++ )
-                        if( ftemp = det_flist[i] )
-                            break;
-                }
-                fault_under_test = ftemp;
-            }
             total_no_of_backtracks += current_backtracks; // accumulate number of backtracks
             no_of_calls++;
         }
