@@ -405,6 +405,7 @@ fault_sim_a_vector_frame01(flist,num_of_current_detect)
                 {
                     f -> pnext_detected = f_detected;
                     f_detected = f;
+                    f -> sim_detect = 1;
                 }
             }
             else {
@@ -460,6 +461,7 @@ fault_sim_a_vector_frame01(flist,num_of_current_detect)
                             {
                                 f -> pnext_detected = f_detected;
                                 f_detected = f;
+                                f -> sim_detect = 1;
                             }
 
 
@@ -530,7 +532,7 @@ fault_sim_a_vector_frame01(flist,num_of_current_detect)
                 if (w->flag & OUTPUT) { // if primary output 
                     for (i = 0; i < num_of_fault; i++) { // check every undetected fault
                         
-                        if (!(simulated_fault_list[i]->detect)) {
+                        if (!(simulated_fault_list[i]->detect) && !(simulated_fault_list[i] -> sim_detect)) {
                             if ((w->wire_value2 & Mask[i]) ^      // if value1 != value2
                                     (w->wire_value1 & Mask[i])) {
                                 if (((w->wire_value2 & Mask[i]) ^ Unknown[i])&&  // and not unknowns
@@ -615,7 +617,7 @@ fault_sim_a_vector_frame01(flist,num_of_current_detect)
                 }
             }
 
-
+            f_detected -> sim_detect = 0;
             f = f_detected -> pnext_detected;
             f_detected -> pnext_detected = NULL;
             f_detected  = f;
@@ -627,6 +629,7 @@ fault_sim_a_vector_frame01(flist,num_of_current_detect)
         while( f_detected ) {
             remove_fault( f_detected, 0 );
             (*num_of_current_detect) += f_detected -> eqv_fault_num;
+            f_detected -> sim_detect = 0;
             f = f_detected -> pnext_detected;
             f_detected -> pnext_detected = NULL;
             f_detected  = f;
