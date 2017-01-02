@@ -31,7 +31,7 @@ static bool isCompatible( pptr, pptr );
 static bool isSame(pptr, pptr);
 static void delPattern(pptr);
 static pptr mergePattern( pptr, pptr );
-static void printPList( vector<pptr>* );
+static void printPList( pptr );
 static void printPList2( vector<pptr>* );
 static void setCktPiValue( String );   
 static void setCktPiValue_partial( pptr );   
@@ -186,7 +186,9 @@ STC_fault_sim2( vector<pptr> *v )
     int counter        = 0;
     int use_num        = INT_MAX;
     int pattern_num    = 0;
-    // count non-NULL pattern number 
+    // count non-NULL pattern number
+    
+
     for (int i = 0, n = V.size(); i < n; ++i){
         if(V[i]){
             ++pattern_num;
@@ -194,7 +196,7 @@ STC_fault_sim2( vector<pptr> *v )
             fault_sim_a_vector_frame01_Sun(i, &dummyInt);
         }
     }
-    
+    //return; 
         fptr f1 = choose_primary_fault();
         while(f1){
             if(f1 -> detect_by == -1 ){
@@ -211,13 +213,18 @@ STC_fault_sim2( vector<pptr> *v )
                 s[p1->index_value/2] = ( p1->index_value%2 ? '1' : '0'); 
             }
             setCktPiValue(s);
+            /*
+            if(f1->fault_no == 1392){
+                for( int j = 0; j < ncktin; ++j )
+                    cout<< sort_wlist[j]->value;
+                cout<<endl;
+            }
+            */
             //use_num = 0;
             if( !fault_sim_a_vector_frame01_Y(&dummyInt) ){
                 patVec.push_back(s);
                 //++use_num;
             }
-            //if( use_num < pattern_num * STC_thre )
-            //    break;
 
             f1 = choose_primary_fault();
         }
@@ -317,18 +324,15 @@ mergePattern( pptr p1, pptr p2 )
 }
 
 void
-printPList( vector<pptr>* v )
-{
-    // print all existing pattern
-    vector<pptr> &V = (*v);
-    int counter = 0; 
-    for(int i = 0, n = V.size(); i < n; ++i){
-        if(V[i] == 0) continue;
-        printf("%d >> ", counter++);
-        for (pptr p = V[i]; p; p=p->pnext)
-            printf("[%d]:%d ", p->index_value/2, p->index_value%2);
-        printf("\n");
-    }
+printPList( pptr p1 )
+{    
+    if (!p1) return;
+    vector<char> vPattern(ncktin, 'x');
+    for (pptr p = p1; p; p=p->pnext)
+        vPattern[p->index_value/2] =  (p->index_value%2 ? '1':'0' );
+    for (int j = 0; j < ncktin; ++j)
+        cout << vPattern[j];
+    printf("\n");
 }
 void
 printPList2( vector<pptr>* v )
@@ -354,7 +358,9 @@ setCktPiValue_partial( pptr p )
     // initialize all wire value -> Unknown
     for(int i = 0; i < ncktwire; ++i)
         sort_wlist[i]->value = U;
-    // insert PIASSIGN value
+    // insert PIASSIGN value, and assign unspecified PI = 0
+    for(int i = 0; i < ncktin; ++i)
+        sort_wlist[i]->value = 0;
     for(pptr pp = p; pp; pp = pp->pnext)
         sort_wlist[pp->index_value/2]->value = pp->index_value%2;
 }
@@ -369,7 +375,7 @@ setCktPiValue( String sPat )
         sort_wlist[i]->value = U;
     // insert PIASSIGN value
     for(int i = 0; i < ncktin; ++i)
-        sort_wlist[i]->value = (sPat[i] == '0' ? 0 : 1 );
+        sort_wlist[i]->value = (sPat[i] == '1' ? 1 : 0 );
     //for(pptr pp = p; pp; pp = pp->pnext)
     //    sort_wlist[pp->index_value/2]->value = pp->index_value%2;
 }

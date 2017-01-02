@@ -23,7 +23,7 @@ podem_X.o : atpg.h miscell.h podem_X.c
 	gcc $(CFLAGS) -c podem_X.c
 init_flist.o : atpg.h miscell.h
 	gcc $(CFLAGS) -c init_flist.c
-faultsim.o : atpg.h miscell.h
+faultsim.o : atpg.h miscell.h faultsim.c
 	gcc $(CFLAGS) -c faultsim.c
 test.o : atpg.h miscell.h test.c
 	gcc $(CFLAGS) -c test.c

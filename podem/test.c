@@ -41,7 +41,7 @@ choose_second_fault( s_fault )
 
 // if x number in pi is lower than a threshold return TRUE
 // else return FALSE
-static double threshold = 0.2;
+static double threshold = 0.1;
 
 int 
 pi_x_num()
@@ -220,6 +220,7 @@ test()
 
             if( !SecondFault )
             {
+                add_pat_ini_test_set();
                 fault_sim_a_vector_frame01_Z(&current_detect_num);
                 
                 // display_io_frame01();
@@ -233,6 +234,7 @@ test()
         fault_under_test = choose_primary_fault();
         while(fault_under_test) {
             fault_under_test -> detect = 0;
+            fault_under_test -> sim_detect = 0;
             fault_under_test = choose_second_fault( fault_under_test);
         }
 
