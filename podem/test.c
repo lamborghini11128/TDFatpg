@@ -184,7 +184,7 @@ test()
                 {
                     // fault sim and fault drop 
                     fault_sim_a_vector_frame01_Z(&current_detect_num);
-                    display_io_frame01();
+                    // display_io_frame01();
                     in_vector_no++;
                     continue;
                 } 
@@ -209,7 +209,7 @@ test()
                 {
                     // fault sim and fault drop 
                     fault_sim_a_vector_frame01_Z(&current_detect_num);
-                    display_io_frame01();
+                    // display_io_frame01();
                     in_vector_no++;
                     SecondFault = 1;
                     break;
@@ -221,13 +221,22 @@ test()
             if( !SecondFault )
             {
                 fault_sim_a_vector_frame01_Z(&current_detect_num);
-                display_io_frame01();
+                
+                // display_io_frame01();
                 in_vector_no++;
             }
 
             fault_under_test = choose_primary_fault();
 
         }
+
+        fault_under_test = choose_primary_fault();
+        while(fault_under_test) {
+            fault_under_test -> detect = 0;
+            fault_under_test = choose_second_fault( fault_under_test);
+        }
+
+
         return;
     }
 

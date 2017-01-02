@@ -293,6 +293,7 @@ generate_fault_list_frame01()
         f -> det_num  = 0;
         f -> sim_detect = 0;
         f -> pprev = f_prev;
+        f -> detect_by = -1;
         f_prev = f;
     }
     /*

@@ -23,6 +23,7 @@ extern "C" void initialize_vars();
 
 static void STC_noDict_naive( vector<pptr>* ); 
 static void STC_fault_sim( vector<pptr>* ); 
+static void STC_fault_sim2( vector<pptr>* ); 
 
 // Local helper funciton
 static void getPatternList( vector<pptr>* );
@@ -33,6 +34,7 @@ static pptr mergePattern( pptr, pptr );
 static void printPList( vector<pptr>* );
 static void printPList2( vector<pptr>* );
 static void setCktPiValue( String );   
+static void setCktPiValue_partial( pptr );   
 static int  fault_undropped_num();   
 static vector<pptr> IniTestSet;
    
@@ -70,22 +72,27 @@ add_pat_ini_test_set()
 void 
 test_compression()
 {
-    // return;
+    
+    if(!compression)     return;
     printf("test_compression()\n");
-    vector<pptr> pList;
-    getPatternList( &pList );
-    cout << "Initial Test Set\n";
-    //printPList2(&pList);
+    vector<pptr> &pList = IniTestSet; 
+    //getPatternList( &pList );
+    cout << "Initial Test Size :" << IniTestSet.size() << endl;
 
     STC_noDict_naive(&pList);
-    STC_fault_sim(&pList);
+    cout << "Stage I Test Size :" << IniTestSet.size() << endl;
+    STC_fault_sim2(&pList);
+    //STC_fault_sim(&pList);
+
 }
 
 void
 STC_noDict_naive( vector<pptr> *v )
 {
     // remove identical patterns and free the memory
+    
     vector<pptr> &V = (*v);
+   /*
     for(int i = 0, n = v->size(); i < n -1; ++i){
         if(V[i] == 0) continue;
         for(int j = i+1; j < n; ++j){
@@ -96,7 +103,7 @@ STC_noDict_naive( vector<pptr> *v )
             }
         }
     }
-    
+    */
     // iteratively merge patterns if they are compatible
     int mergeSuccess;
     do{
@@ -135,8 +142,8 @@ STC_fault_sim( vector<pptr> *v )
     for (int i = 0, n = V.size(); i < n; ++i)
         if(V[i]) ++pattern_num;
     
-    
-    while( use_num > pattern_num/4 ){
+    const double STC_thre = 0.4; 
+    while( use_num > pattern_num * STC_thre ){
         use_num = 0;
         for (int i = 0, n = V.size(); i < n; ++i){
             if(!V[i]) continue;
@@ -159,6 +166,61 @@ STC_fault_sim( vector<pptr> *v )
         cout << "iteration: " << counter++ <<" patSize:"<< patVec.size()<<endl;
     }
     
+    // print ALL pattern out
+    for(int i = 0, n = patVec.size(); i < n; ++i){
+        cout<< "T'"; 
+        for (int j = 1; j < ncktin; ++j){
+            cout << patVec[i][j];
+        }
+        cout << " " << patVec[i][0] << "'\n";
+    }
+    cout << "# pattern size = " << patVec.size() << endl;
+}
+
+void
+STC_fault_sim2( vector<pptr> *v )
+{
+    vector<pptr>   &V = (*v);
+    vector<String> patVec;
+    int dummyInt       = 0; 
+    int counter        = 0;
+    int use_num        = INT_MAX;
+    int pattern_num    = 0;
+    // count non-NULL pattern number 
+    for (int i = 0, n = V.size(); i < n; ++i){
+        if(V[i]){
+            ++pattern_num;
+            setCktPiValue_partial(V[i]);
+            fault_sim_a_vector_frame01_Sun(i, &dummyInt);
+        }
+    }
+    
+        fptr f1 = choose_primary_fault();
+        while(f1){
+            if(f1 -> detect_by == -1 ){
+                f1 = choose_second_fault(f1);
+                continue;
+            }
+            String s = "";
+            // randomly assign initial pattern;
+            for(int j = 0; j < ncktin; ++j){
+                s += ( rand()&01 ? "1" : "0" );
+            }
+        
+            for(pptr p1 = V[f1->detect_by]; p1; p1 = p1->pnext){
+                s[p1->index_value/2] = ( p1->index_value%2 ? '1' : '0'); 
+            }
+            setCktPiValue(s);
+            //use_num = 0;
+            if( !fault_sim_a_vector_frame01_Y(&dummyInt) ){
+                patVec.push_back(s);
+                //++use_num;
+            }
+            //if( use_num < pattern_num * STC_thre )
+            //    break;
+
+            f1 = choose_primary_fault();
+        }
     // print ALL pattern out
     for(int i = 0, n = patVec.size(); i < n; ++i){
         cout<< "T'"; 
@@ -285,6 +347,18 @@ printPList2( vector<pptr>* v )
         printf("\n");
     }
 }
+
+void 
+setCktPiValue_partial( pptr p )
+{
+    // initialize all wire value -> Unknown
+    for(int i = 0; i < ncktwire; ++i)
+        sort_wlist[i]->value = U;
+    // insert PIASSIGN value
+    for(pptr pp = p; pp; pp = pp->pnext)
+        sort_wlist[pp->index_value/2]->value = pp->index_value%2;
+}
+
 
 
 void 

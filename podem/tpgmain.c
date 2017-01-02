@@ -122,7 +122,7 @@ char *argv[];
     initialize_vars();
     test(); //test.c
 	
-    //test_compression();
+    test_compression();
     //if(!tdfsim_only){
 		compute_fault_coverage(); //init_flist.c
 	//}

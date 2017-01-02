@@ -44,6 +44,7 @@ struct FAULT {
 	int  fault_no;         /* fault index */
     int  det_num;          /* detection number */
     pptr piassign;         /* pi assignment */
+    int  detect_by;
 };
 
 fptr first_fault;         /* pointer to the first element of the fault list */
