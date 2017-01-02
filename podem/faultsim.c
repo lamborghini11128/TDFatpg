@@ -659,7 +659,7 @@ fault_sim_a_vector_frame01_X(num_of_current_detect)
     fptr simulated_fault_list[num_of_pattern];
     fptr f,ftemp, f_detected;
     int fault_type;
-    register int i,j,k,start_wire_index, l;
+    register int i,j,k,start_wire_index, l, m;
     register int num_of_fault; 
     pptr p, ptemp, plist;
     int fault_sim_evaluate();
@@ -719,7 +719,6 @@ fault_sim_a_vector_frame01_X(num_of_current_detect)
 
     while(f)
     {
-        
         ftemp = f -> pnext;
         if( !ftemp )
         {
@@ -757,6 +756,8 @@ fault_sim_a_vector_frame01_X(num_of_current_detect)
                 {
                     f -> pnext_detected = f_detected;
                     f_detected = f;
+                    f -> sim_detect = 1;
+                    //continue;
                 }
             }
             else {
@@ -812,6 +813,8 @@ fault_sim_a_vector_frame01_X(num_of_current_detect)
                             {
                                 f -> pnext_detected = f_detected;
                                 f_detected = f;
+                                f -> sim_detect = 1;
+                                //continue;
                             }
 
 
@@ -882,7 +885,7 @@ fault_sim_a_vector_frame01_X(num_of_current_detect)
                 if (w->flag & OUTPUT) { // if primary output 
                     for (i = 0; i < num_of_fault; i++) { // check every undetected fault
                         
-                        if (!(simulated_fault_list[i]->detect)) {
+                        if (!(simulated_fault_list[i]->detect) && !(simulated_fault_list[i] -> sim_detect)) {
                             if ((w->wire_value2 & Mask[i]) ^      // if value1 != value2
                                     (w->wire_value1 & Mask[i])) {
                                 if (((w->wire_value2 & Mask[i]) ^ Unknown[i])&&  // and not unknowns
@@ -905,8 +908,10 @@ fault_sim_a_vector_frame01_X(num_of_current_detect)
                                         ((wnext -> wire_value2 & Mask[i]) == (Mask[i] * simulated_fault_list[i] -> fault_type))) 
                                     {
                                         //remove_fault( simulated_fault_list[i]->detect, 0 ); //then the fault is detected
+                                        simulated_fault_list[i] -> sim_detect = 1;
                                         simulated_fault_list[i] -> pnext_detected = f_detected;
                                         f_detected = simulated_fault_list[i];
+                                            //printf("%d fault in detected list\n", simulated_fault_list[i] -> fault_no);
                                     }
                                     //simulated_fault_list[i]->detect = TRUE;  // then the fault is detected
                                 }
@@ -928,14 +933,18 @@ fault_sim_a_vector_frame01_X(num_of_current_detect)
 
 /* the following two loops are both for fault dropping  */  
 /* drop detected faults from the FRONT of the undetected fault list */
-    
+   
+    //printf("detect: ");
     while( f_detected ) {
+        //printf("%d ", f_detected -> fault_no);
         remove_fault( f_detected, 0 );
         (*num_of_current_detect) += f_detected -> eqv_fault_num;
+        f_detected -> sim_detect = 0;
         f = f_detected -> pnext_detected;
-        f_detected -> pnext_detected = NULL;
+        f_detected -> pnext_detected = NIL(struct fault);
         f_detected  = f;
     }
+    //printf("\n");
 
     /*
     for( i = 0; i < detection_num; i++ )

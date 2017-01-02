@@ -291,10 +291,11 @@ generate_fault_list_frame01()
     for (f = first_fault, fault_num = 0; f; f = f->pnext, fault_num++) {
         f -> fault_no = fault_num;
         f -> det_num  = 0;
+        f -> sim_detect = 0;
         f -> pprev = f_prev;
         f_prev = f;
     }
-/*
+    /*
     for (f = first_fault, fault_num = 0; f; f = f->pnext, fault_num++) {
         printf( "fault num %d ", f -> fault_no ); 
         if( f -> pprev )
@@ -306,7 +307,7 @@ generate_fault_list_frame01()
         display_fault( f );
         
     }
-*/
+    */
     det_flist[0] = first_fault;
 
 //fprintf(stdout,"#number of equivalent faults = %d\n", fault_num);

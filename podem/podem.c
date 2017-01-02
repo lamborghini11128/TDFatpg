@@ -402,6 +402,7 @@ podem_frame01_X(fault, current_backtracks, isPrimaryFault)
 
     //printf("poden start %d\n", fault -> fault_no);
     /* initialize all circuit wires to unknown */
+
     if( isPrimaryFault )
     {
         for (i = 0; i < ncktwire; i++) {

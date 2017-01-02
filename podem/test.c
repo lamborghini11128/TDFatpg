@@ -115,7 +115,7 @@ test()
     }
 
 
-    if( tdfatpg_only )
+    if( tdfatpg_only && compression )
     {
         int PrimaryFault = 0;
         int SecondFault = 0;
@@ -126,12 +126,16 @@ test()
         
         while( fault_under_test )
         {
-            //printf( "PrimaryFault %d \n", fault_under_test -> fault_no);
-            
+            if( fault_under_test -> test_tried )
+            {
+                fault_under_test = choose_second_fault( fault_under_test );
+                continue;
+            }
 
             PrimaryFault = 0;
             switch(podem_frame01_X(fault_under_test,&current_backtracks, 1)) {
                 case TRUE:
+                    //printf( "PrimaryFault %d \n", fault_under_test -> fault_no);
                     fault_under_test = choose_second_fault( fault_under_test );
                     PrimaryFault = 1;
                     break;
@@ -145,7 +149,7 @@ test()
                     break;
                 case MAYBE:
                     fault_under_test->test_tried = TRUE; // deal later
-                    fault_under_test = choose_second_fault();
+                    fault_under_test = choose_second_fault( fault_under_test );
                     PrimaryFault = 0;
                     break;
             }
@@ -166,7 +170,7 @@ test()
 
             /*
             for( i = 0; i < ncktin; i++ )
-                printf( "%d ", sort_wlist[i] -> value );
+                printf( "%d", sort_wlist[i] -> value );
             printf("\n");
             */
 
@@ -202,11 +206,72 @@ test()
                 fault_sim_a_vector_frame01_X(&current_detect_num);
                 display_io_frame01();
             }
+
+            /*
+            for( i = 0; i < detection_num; i++ )
+                if( det_flist[i] )
+                    printf( "%d ", det_flist[i] -> fault_no );
+                else
+                    printf( "x ");
+            printf("\n");
+            */
             fault_under_test = choose_primary_fault();
 
-        }    
+        }
+        return;
     }
 
+    if( tdfatpg_only && !compression )
+    {
+        int PrimaryFault = 0;
+        int SecondFault = 0;
+        fptr fault_detect;
+        int i;
+
+        fault_under_test = choose_primary_fault();
+        
+        while( fault_under_test )
+        {
+            if( fault_under_test -> test_tried )
+            {
+                fault_under_test = choose_second_fault( fault_under_test );
+                continue;
+            }
+
+            PrimaryFault = 0;
+            switch(podem_frame01_X(fault_under_test,&current_backtracks, 1)) {
+                case TRUE:
+                    //printf( "PrimaryFault %d \n", fault_under_test -> fault_no);
+                    PrimaryFault = 1;
+                    break;
+                case FALSE:
+                    //printf("    remove %d \n", fault_under_test -> fault_no);
+                    fault_under_test->detect = REDUNDANT;
+                    fault_under_test->test_tried = TRUE; // deal later
+                    remove_fault( fault_under_test, 1 );
+                    fault_under_test = choose_primary_fault();
+                    PrimaryFault = 0;
+                    break;
+                case MAYBE:
+                    fault_under_test->test_tried = TRUE; // deal later
+                    fault_under_test = choose_second_fault( fault_under_test );
+                    PrimaryFault = 0;
+                    break;
+            }
+            
+            if( PrimaryFault )
+            {
+                for( i = 0; i < ncktin; i++ )
+                {
+                    if( sort_wlist[i] -> value == U ) 
+                        sort_wlist[i] -> value = rand()&01;
+                }    
+                fault_sim_a_vector_frame01_X(&current_detect_num);
+                display_io_frame01();
+                fault_under_test = choose_primary_fault();
+            }
+        }    
+    }
 
 
     if( tdfatpg_only )
