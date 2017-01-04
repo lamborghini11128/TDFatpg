@@ -4,7 +4,6 @@
 
 #define U  2
 
-//develop
 
 extern int total_attempt_num;
 
