@@ -6,7 +6,7 @@
 #include "miscell.h"
 
 extern char *filename;
-int backtrack_limit = 50;       /* default value */
+int backtrack_limit = 200;       /* default value */
 int total_attempt_num = 1;      /* default value */
 
 main(argc,argv)
@@ -84,47 +84,44 @@ char *argv[];
 
 /* read in and parse the input file */
     if( tdfatpg_only )
-        input_frame01(inpFile);
+        input_frame01(inpFile); // input.c
     else
         input(inpFile); // input.c
 
     printf("%d detection\n", detection_num);
-   // printf("Finish input\n");
+    printf("Finish input\n");
 /* if vector file is provided, read it */
     if(vetFile[0] != '0') { read_vectors(vetFile); }
     //timer(stdout,"for reading in circuit",filename);
     //printf("Finish read vectors\n");
 
     level_circuit();  // level.c
-    //printf("Finish level\n");
+    printf("Finish level\n");
     //timer(stdout,"for levelling circuit",filename);
 
     rearrange_gate_inputs();  //level.c
-    //printf("Finish rearrange gate \n");
+    printf("Finish rearrange gate \n");
     //timer(stdout,"for rearranging gate inputs",filename);
 
-    if( tdfatpg_only )
-        create_dummy_gate_frame01(); //init_flist.c
-    else
-        create_dummy_gate(); //init_flist.c
+    create_dummy_gate(); //init_flist.c
 
-    //printf("Finish create_dummy_gate \n");
+    printf("Finish create_dummy_gate \n");
     //timer(stdout,"for creating dummy nodes",filename);
 
     if( tdfatpg_only )
-        generate_fault_list_frame01(); //init_flist.c
+        generate_fault_list_Moon(); //init_flist.c
     else
         generate_fault_list(); //init_flist.c
 
-    //printf("Finish generate fault list \n");
+    printf("Finish generate fault list \n");
     //timer(stdout,"for generating fault list",filename);
 
     initialize_vars();
     test(); //test.c
 	
-    test_compression();
+    //test_compression();
     //if(!tdfsim_only){
-		compute_fault_coverage(); //init_flist.c
+//		compute_fault_coverage(); //init_flist.c
 	//}
     
     //timer(stdout,"for test pattern generation",filename);

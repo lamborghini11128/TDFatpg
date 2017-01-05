@@ -152,6 +152,133 @@ generate_fault_list()
     return;  
 }/* end of generate_fault_list */
 
+
+generate_fault_list_Moon()
+{
+    int i,j,k;
+    wptr w;
+    nptr n;
+    fptr f, f_prev;
+    int fault_num;  
+
+    first_fault = NIL(struct FAULT);  // start of fault list 
+    num_of_gate_fault = 0; // totle number of faults in the whole circuit
+    
+    if(!(det_flist = ALLOC(detection_num, struct FAULT))) error("No more room!"); // bulid dection fault list
+    for ( i = 0; i < detection_num; i++ )
+        det_flist[i] = NIL(struct FAULT);
+
+
+
+    /* walk through every wire in the circuit*/
+    for (i = ncktwire - 1; i >= 0; i--) {
+        w = sort_wlist[i]; // each wire w
+        n = w->inode[0]; // w is the gate n output wire
+        
+        if( n -> type != NOT && n -> type != BUF )
+        {
+            /* for each gate, create a gate output stuck-at zero (SA0) fault */
+            if (!(f = ALLOC(1,struct FAULT))) error("No more room!");
+            f->node = n;
+            f->io = GO;
+            f->fault_type = STUCK0;
+            f->to_swlist = i;
+            f -> eqv_fault_num = 1;
+            num_of_gate_fault += f->eqv_fault_num; // accumulate total fault count
+            f->pnext = first_fault;  // insert into the fault list
+            f->pnext_undetect = first_fault; // initial undetected fault list contains all faults
+            first_fault = f;
+
+            /* for each gate, create a gate output stuck-at one (SA1) fault */
+            if (!(f = ALLOC(1,struct FAULT))) error("No more room!");
+            f->node = n;
+            f->io = GO;
+            f->fault_type = STUCK1;
+            f->to_swlist = i;
+            f->eqv_fault_num = 1;
+            num_of_gate_fault += f->eqv_fault_num;
+            f->pnext = first_fault;
+            f->pnext_undetect = first_fault;
+            first_fault = f;
+        }
+        /*if w has multiple fanout branches,   */
+        if (w->nout > 1) {
+            for (j = 0 ; j < w->nout; j++) {
+                n = w->onode[j];
+                if( n -> type == NOT || n -> type == BUF )
+                    continue;
+                /* create SA0 for OR NOR EQV XOR gate inputs  */
+                if (!(f = ALLOC(1,struct FAULT))) error("No more room!");
+                f->node = n;
+                f->io = GI;
+                f->fault_type = STUCK0;
+                f->to_swlist = i;
+                f->eqv_fault_num = 1;
+                /* f->index is the index number of gate input, 
+                   which GI fault is associated with*/
+                for (k = 0; k < n->nin; k++) {  
+                    if (n->iwire[k] == w) f->index = k;
+                }
+                num_of_gate_fault++;
+                f->pnext = first_fault;
+                f->pnext_undetect = first_fault;
+                first_fault = f;
+
+                /* create SA1 for AND NAND EQV XOR gate inputs  */
+
+                if (!(f = ALLOC(1,struct FAULT))) error("Room more room!");
+                f->node = n;
+                f->io = GI;
+                f->fault_type = STUCK1;
+                f->to_swlist = i;
+                f->eqv_fault_num = 1;
+                for (k = 0; k < n->nin; k++) {
+                    if (n->iwire[k] == w) f->index = k;
+                }
+                num_of_gate_fault++;
+                f->pnext = first_fault;
+                f->pnext_undetect = first_fault;
+                first_fault = f;
+                break;
+            }
+        }
+    }
+
+    /*walk through all fautls, assign fault_no one by one  */
+    f_prev = NULL;
+    /*walk through all fautls, assign fault_no one by one  */
+    for (f = first_fault, fault_num = 0; f; f = f->pnext, fault_num++) {
+        f -> fault_no = fault_num;
+        f -> det_num  = 0;
+        f -> sim_detect = 0;
+        f -> pprev = f_prev;
+        f -> detect_by = -1;
+        f_prev = f;
+    }
+
+    /*
+    for (f = first_fault, fault_num = 0; f; f = f->pnext, fault_num++) {
+        printf( "fault num %d ", f -> fault_no ); 
+        if( f -> pprev )
+            printf( "prev %d ", f -> pprev -> fault_no );
+
+        if( f -> pnext )
+            printf( "next %d ", f -> pnext -> fault_no ); 
+        printf("\n");
+        display_fault( f );
+        
+    }
+    */
+
+    det_flist[0] = first_fault;
+
+    //fprintf(stdout,"#number of equivalent faults = %d\n", fault_num);
+    return;  
+}/* end of generate_fault_list */
+
+
+
+
 /* the way of fault collapsing is different from what we teach in class
    need modification */
 generate_fault_list_frame01()

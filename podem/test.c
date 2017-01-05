@@ -114,6 +114,7 @@ test()
     int  pi_x_num();
     int  pi_x_num_static();
     void fault_sim_a_vector_frame01_X();
+    void fault_sim_a_vector_Moon();
 
     in_vector_no = 0;
     total_detect_num = 0;
@@ -139,110 +140,6 @@ test()
         return;
     }
     
-    // dynamic + static
-    if( tdfatpg_only && compression )
-    {
-        int PrimaryFault = 0;
-        int SecondFault = 0;
-        fptr fault_detect;
-        int i;
-
-        fault_under_test = choose_primary_fault();
-        
-        while( fault_under_test )
-        {
-            if( fault_under_test -> test_tried || fault_under_test -> detect == TRUE)
-            {
-                fault_under_test = choose_second_fault( fault_under_test );
-                continue;
-            }
-
-            PrimaryFault = 0;
-            switch(podem_frame01_X(fault_under_test,&current_backtracks, 1)) {
-                case TRUE:
-                    //printf( "PrimaryFault %d \n", fault_under_test -> fault_no);
-                    fault_under_test = choose_second_fault( fault_under_test );
-                    PrimaryFault = 1;
-                    break;
-                case FALSE:
-                    //printf("    remove %d \n", fault_under_test -> fault_no);
-                    fault_under_test->detect = REDUNDANT;
-                    fault_under_test->test_tried = TRUE; // deal later
-                    remove_fault( fault_under_test, 1 );
-                    fault_under_test = choose_primary_fault();
-                    PrimaryFault = 0;
-                    break;
-                case MAYBE:
-                    fault_under_test->test_tried = TRUE; // deal later
-                    fault_under_test = choose_second_fault( fault_under_test );
-                    PrimaryFault = 0;
-                    break;
-            }
-            
-            if( PrimaryFault )
-            {
-                if( pi_x_num_static() )
-                {
-                    // fault sim and fault drop 
-                    fault_sim_a_vector_frame01_Z(&current_detect_num);
-                    // display_io_frame01();
-                    in_vector_no++;
-                    continue;
-                } 
-            }
-            else
-                continue;
-
-            /*
-            for( i = 0; i < ncktin; i++ )
-                printf( "%d", sort_wlist[i] -> value );
-            printf("\n");
-            */
-
-            //second pattern
-            SecondFault = 0;
-            while( fault_under_test )
-            {
-                //printf( "SecondFault %d \n", fault_under_test -> fault_no);
-                podem_frame01_X(fault_under_test,&current_backtracks, 0);
-
-                if( pi_x_num_static() )
-                {
-                    // fault sim and fault drop 
-                    fault_sim_a_vector_frame01_Z(&current_detect_num);
-                    // display_io_frame01();
-                    in_vector_no++;
-                    SecondFault = 1;
-                    break;
-                }
-
-                fault_under_test = choose_second_fault( fault_under_test );
-            }
-
-            if( !SecondFault )
-            {
-                add_pat_ini_test_set();
-                fault_sim_a_vector_frame01_Z(&current_detect_num);
-                
-                // display_io_frame01();
-                in_vector_no++;
-            }
-
-            fault_under_test = choose_primary_fault();
-
-        }
-
-        fault_under_test = choose_primary_fault();
-        while(fault_under_test) {
-            fault_under_test -> detect = 0;
-            fault_under_test -> sim_detect = 0;
-            fault_under_test = choose_second_fault( fault_under_test);
-        }
-
-
-        return;
-    }
-
     // only dynamic
     if( tdfatpg_only && compression )
     {
@@ -262,7 +159,8 @@ test()
             }
 
             PrimaryFault = 0;
-            switch(podem_frame01_X(fault_under_test,&current_backtracks, 1)) {
+            printf( "\n\nSSSSSSSSSSSSSSSSSSSSS fault no: %d   SSSSSSSSSSSSSSSSSS\n", fault_under_test -> fault_no );
+            switch(podem_Moon(fault_under_test,&current_backtracks, 1)) {
                 case TRUE:
                     //printf( "PrimaryFault %d \n", fault_under_test -> fault_no);
                     fault_under_test = choose_second_fault( fault_under_test );
@@ -288,8 +186,9 @@ test()
                 if( pi_x_num() )
                 {
                     // fault sim and fault drop 
-                    fault_sim_a_vector_frame01_X(&current_detect_num);
-                    display_io_frame01();
+                    
+                    fault_sim_a_vector_Moon(&current_detect_num);
+                    display_io_Moon();
                     in_vector_no++;
                     continue;
                 }
@@ -311,13 +210,13 @@ test()
             {
                 //printf( "SecondFault %d \n", fault_under_test -> fault_no);
 
-                podem_frame01_X(fault_under_test,&current_backtracks, 0);
+                podem_Moon(fault_under_test,&current_backtracks, 0);
 
                 if( pi_x_num() )
                 {
                     // fault sim and fault drop 
-                    fault_sim_a_vector_frame01_X(&current_detect_num);
-                    display_io_frame01();
+                    fault_sim_a_vector_Moon(&current_detect_num);
+                    display_io_Moon();
                     in_vector_no++;
                     SecondFault = 1;
                     break;
@@ -335,8 +234,8 @@ test()
                     if( sort_wlist[i] -> value == U ) 
                         sort_wlist[i] -> value = rand()&01;
                 }
-                fault_sim_a_vector_frame01_X(&current_detect_num);
-                display_io_frame01();
+                fault_sim_a_vector_Moon(&current_detect_num);
+                display_io_Moon();
                 in_vector_no++;
             }
 
@@ -362,7 +261,6 @@ test()
         int i;
 
         fault_under_test = choose_primary_fault();
-        
         while( fault_under_test )
         {
             if( fault_under_test -> test_tried )
@@ -372,7 +270,9 @@ test()
             }
 
             PrimaryFault = 0;
-            switch(podem_frame01_X(fault_under_test,&current_backtracks, 1)) {
+            //printf( "\n\nSSSSSSSSSSSSSSSSSSSSS fault no: %dSSSSSSSSSSSSSSSSSS\n", fault_under_test -> fault_no );
+            //display_fault( fault_under_test );
+            switch(podem_Moon(fault_under_test,&current_backtracks, 1)) {
                 case TRUE:
                     //printf( "PrimaryFault %d \n", fault_under_test -> fault_no);
                     PrimaryFault = 1;
@@ -386,6 +286,7 @@ test()
                     PrimaryFault = 0;
                     break;
                 case MAYBE:
+                    //printf( "MAYBE %d \n", fault_under_test -> fault_no);
                     fault_under_test->test_tried = TRUE; // deal later
                     fault_under_test = choose_second_fault( fault_under_test );
                     PrimaryFault = 0;
@@ -399,8 +300,18 @@ test()
                     if( sort_wlist[i] -> value == U ) 
                         sort_wlist[i] -> value = rand()&01;
                 }    
-                fault_sim_a_vector_frame01_X(&current_detect_num);
-                display_io_frame01();
+            
+                /*
+                for( i = 0; i < detection_num; i++ )
+                {
+                    printf("det{%d}:", i);
+                    for( f = det_flist[i]; f; f = f -> pnext)
+                        printf("%d  ", f -> fault_no );
+                    printf("\n");
+                }
+                */
+                fault_sim_a_vector_Moon(&current_detect_num);
+                display_io_Moon();
                 in_vector_no++;
                 fault_under_test = choose_primary_fault();
             }

@@ -18,6 +18,7 @@ wptr *cktout;              /* output wire list */
 nptr *cktnode_f0;          /* frame 0 node list */
 wptr *cktout_f0;           /* output wire list */
 wptr *cktout_f1;           /* output wire list */
+wptr LastPi;               /* pattern 1 last pi */
 wptr hash_wlist[HASHSIZE]; /* hashed wire list */
 nptr hash_nlist[HASHSIZE]; /* hashed node list */
 fptr *det_flist;           /* detection fault list */
@@ -49,6 +50,7 @@ extern wptr *cktout;              /* output wire list */
 extern nptr *cktnode_f0;          /* frame 0 node list */
 extern wptr *cktout_f0;              /* output wire list */
 extern wptr *cktout_f1;              /* output wire list */
+extern wptr LastPi;               /* pattern 1 last pi */
 extern wptr hash_wlist[HASHSIZE]; /* hashed wire list */
 extern nptr hash_nlist[HASHSIZE]; /* hashed node list */
 extern fptr *det_flist;           /* detection fault list */
