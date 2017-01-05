@@ -42,7 +42,7 @@ choose_second_fault( s_fault )
 
 // if x number in pi is lower than a threshold return TRUE
 // else return FALSE
-static double threshold = 0.1;
+static double threshold = 0.2;
 
 int 
 pi_x_num()
@@ -140,7 +140,7 @@ test()
     }
     
     // dynamic + static
-    if( tdfatpg_only && compression )
+    if( 0 && tdfatpg_only && compression )
     {
         int PrimaryFault = 0;
         int SecondFault = 0;
