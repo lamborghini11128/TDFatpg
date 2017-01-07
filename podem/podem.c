@@ -210,9 +210,31 @@ podem_Moon(fault, current_backtracks, isPrimaryFault)
     if( isPrimaryFault )
     {
         for (i = 0; i < ncktwire; i++) {
-            sort_wlist[i]->value = U;
-            sort_wlist[i]->p1_value = U;
+            sort_wlist[i] -> value = U;
+            sort_wlist[i] -> p1_value = U;
+            sort_wlist[i] -> fix = 0;
         }
+        LastPi -> value = U;
+        LastPi -> p1_value = U;
+        LastPi -> fix = 0;
+    }
+    else
+    {
+        for( i = 0; i < ncktwire; i++)
+        {
+            if( i < ncktin )
+            {
+                sort_wlist[i] -> flag    |= CHANGED;
+                sort_wlist[i] -> p1_flag |= CHANGED;
+            }
+            else
+            {
+                sort_wlist[i] -> value = 2;
+                sort_wlist[i] -> p1_value = 2;
+            }
+        }
+        sim();
+        sim_Moon();
     }
     no_of_backtracks = 0;
     find_test = FALSE;
@@ -356,6 +378,47 @@ again:  if (wpi) {
     }
     *current_backtracks = no_of_backtracks;
     unmark_propagate_tree(fault->node);
+
+    if( find_test ){
+        for (i = 0; i < ncktwire; i++) {
+            if( sort_wlist[i] -> value != U )
+                sort_wlist[i] -> fix = 1;
+
+        }
+        if( LastPi -> value != U )
+            LastPi -> fix = 1;
+
+    }
+    else 
+    {
+        for (i = 0; i < ncktwire; i++) {
+            if( sort_wlist[i] -> fix == 0 )
+            {
+                sort_wlist[i] -> value = U;
+                if( sort_wlist[i] -> pvspi != NULL )
+                    sort_wlist[i] -> pvspi -> p1_value = U;
+            }
+            if( sort_wlist[i] -> value == D )
+                sort_wlist[i] -> value = 1;
+            if( sort_wlist[i] -> value == B )
+                sort_wlist[i] -> value = 0;
+
+        }
+
+        if( LastPi -> fix == 0 )
+        {
+            LastPi -> value = U;
+            LastPi -> pvspi -> p1_value = U;
+        }
+        if( LastPi -> value == D )
+            LastPi -> value = 1;
+        if( LastPi -> value == B )
+            LastPi -> value = 0;
+
+    }
+    
+
+
     if (find_test) {
         /* normally, we want one pattern per fault */
         if (total_attempt_num == 1) {
@@ -1323,6 +1386,8 @@ find_pi_assignment(object_wire,object_level)
         wpvs = object_wire -> pvspi;
         if( wpvs != NULL )
             wpvs -> p1_value = object_level;
+        //else
+        //    printf("ASSIGN SS!!!\n");
 
         //printf( "pi asign %s => %d \n", object_wire -> name, object_wire -> value );
         return(object_wire);
@@ -1377,7 +1442,7 @@ find_pi_assignment_Moon(object_wire,object_level)
     if (object_wire -> flag & INPUT) {
         object_wire -> p1_value = object_level;
         wnxt = object_wire -> nxtpi;
-        if( wnxt )
+        if( wnxt != NULL )
             wnxt -> value = object_level;
         //printf( "pi asign Moon %s => %d \n", object_wire -> name, object_wire -> p1_value );
         return( wnxt );
@@ -1803,6 +1868,8 @@ backward_imply(current_wire,logic_level)
             w            -> p1_value    = logic_level;
             w            -> p1_flag    |= CHANGED;
         }
+        //else
+        //    printf("ASSIGN S!!!\n");
         // CHANGED means the logic value on this wire has recently been changed
         return(TRUE);
     }

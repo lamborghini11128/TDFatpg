@@ -35,6 +35,7 @@ struct WIRE {
 
     wptr pvspi;             /* previous pi for second pattern atpg */
     wptr nxtpi;             /* previous pi for second pattern atpg */
+    int  fix;               /* for dynamic */
 };
 
 // a node is a gate

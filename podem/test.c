@@ -42,7 +42,7 @@ choose_second_fault( s_fault )
 
 // if x number in pi is lower than a threshold return TRUE
 // else return FALSE
-static double threshold = 0.1;
+static double threshold = 0.5;
 
 int 
 pi_x_num()
@@ -164,12 +164,13 @@ test()
                 fault_under_test = choose_second_fault( fault_under_test );
                 continue;
             }
+            //printf( "PrimaryFault %d \n", fault_under_test -> fault_no);
 
             PrimaryFault = 0;
             switch(podem_Moon(fault_under_test,&current_backtracks, 1)) {
                 case TRUE:
                     //printf( "PrimaryFault %d \n", fault_under_test -> fault_no);
-                    fault_under_test = choose_second_fault( fault_under_test );
+                    fault_under_test = choose_primary_fault();
                     PrimaryFault = 1;
                     break;
                 case FALSE:
@@ -181,11 +182,14 @@ test()
                     PrimaryFault = 0;
                     break;
                 case MAYBE:
+                    //printf("    maybe %d \n", fault_under_test -> fault_no);
                     fault_under_test->test_tried = TRUE; // deal later
                     fault_under_test = choose_second_fault( fault_under_test );
                     PrimaryFault = 0;
                     break;
             }
+            
+            //display_io_Moon();
             
             if( PrimaryFault )
             {
@@ -195,6 +199,7 @@ test()
                     
                     fault_sim_a_vector_Moon(&current_detect_num);
                     display_io_Moon();
+                    add_pat_ini_test_set_Moon();
                     in_vector_no++;
                     continue;
                 }
@@ -215,14 +220,28 @@ test()
             while( fault_under_test )
             {
                 //printf( "SecondFault %d \n", fault_under_test -> fault_no);
+                switch( podem_Moon(fault_under_test,&current_backtracks, 0) )
+                {
+                    case TRUE: 
+                        //printf( "SecondFault %d \n", fault_under_test -> fault_no);
+                        break;
+                    case FALSE:
+                        //printf( "   False SecondFault %d \n", fault_under_test -> fault_no);
+                        break;
+                    case MAYBE:
+                        //printf( "   Maybe SecondFault %d \n", fault_under_test -> fault_no);
+                        break;
+                
+                }
 
-                podem_Moon(fault_under_test,&current_backtracks, 0);
+                //display_io_Moon();
 
                 if( pi_x_num() )
                 {
                     // fault sim and fault drop 
                     fault_sim_a_vector_Moon(&current_detect_num);
                     display_io_Moon();
+                    add_pat_ini_test_set_Moon();
                     in_vector_no++;
                     SecondFault = 1;
                     break;
@@ -250,6 +269,7 @@ test()
 
                 fault_sim_a_vector_Moon(&current_detect_num);
                 display_io_Moon();
+                add_pat_ini_test_set_Moon();
                 in_vector_no++;
             }
 
@@ -268,7 +288,8 @@ test()
         return;
     }
 
-    /// debug 
+
+    // true  tdfatpg_only  w/o compression 
     if( tdfatpg_only && !compression )
     {
         int PrimaryFault = 0;
@@ -279,104 +300,14 @@ test()
         fault_under_test = choose_primary_fault();
         while( fault_under_test )
         {
-            PrimaryFault = 0;
-            
-            //if( fault_under_test -> fault_no !=  179 )
-            if( fault_under_test -> test_tried )
+            //if( fault_under_test -> test_tried )
+            if( fault_under_test -> fault_no != 3390 )
             {
                 fault_under_test = choose_second_fault( fault_under_test );
                 continue;
             }
-            
+            PrimaryFault = 0;
             //printf( "\n\nSSSSSSSSSSSSSSSSSSSSS fault no: %d  SSSSSSSSSSSSSSSSSS\n", fault_under_test -> fault_no );
-            //display_fault( fault_under_test );
-            switch(podem_Moon(fault_under_test,&current_backtracks, 1)) {
-                case TRUE:
-                    //printf( "PrimaryFault %d \n", fault_under_test -> fault_no);
-                    PrimaryFault = 1;
-                    break;
-                case FALSE:
-                    //printf("    remove %d \n", fault_under_test -> fault_no);
-                    fault_under_test->detect = REDUNDANT;
-                    fault_under_test->test_tried = TRUE; // deal later
-                    remove_fault( fault_under_test, 1 );
-                    fault_under_test = choose_primary_fault();
-                    PrimaryFault = 0;
-                    break;
-                case MAYBE:
-                    //printf("    MAYBE %d \n", fault_under_test -> fault_no);
-                    fault_under_test->test_tried = TRUE; // deal later
-                    fault_under_test = choose_second_fault( fault_under_test );
-                    PrimaryFault = 0;
-                    break;
-            }
-
-           /* 
-            for( i = 0; i < detection_num; i++ )
-            {
-                printf("det{%d}:", i);
-                for( f = det_flist[i]; f; f = f -> pnext)
-                    printf("%d  ", f -> fault_no );
-                printf("\n");
-            }
-            */
-            if( PrimaryFault )
-            {
-                
-                for( i = 0; i < ncktin; i++ )
-                {
-                    
-                    if( sort_wlist[i] -> value == U ) 
-                    {
-                        sort_wlist[i] -> value = rand()&01;
-                        if( sort_wlist[i] -> pvspi != NULL )
-                            sort_wlist[i] -> pvspi -> p1_value = sort_wlist[i] -> value;
-                    }
-                    
-                    if( i == ncktin - 1 && sort_wlist[i] -> p1_value == U ) 
-                        sort_wlist[i] -> p1_value = rand()&01;
-                }
-                
-                /*
-                for( i = 0; i < detection_num; i++ )
-                {
-                    printf("det{%d}:", i);
-                    for( f = det_flist[i]; f; f = f -> pnext)
-                        printf("%d  ", f -> fault_no );
-                    printf("\n");
-                }
-                */
-                fault_sim_a_vector_Moon(&current_detect_num);
-                display_io_Moon();
-                add_pat_ini_test_set_Moon();
-                in_vector_no++;
-                fault_under_test = choose_primary_fault();
-            }
-            //fault_under_test = choose_second_fault( fault_under_test );
-
-        }
-        printf("NEW pattern num:%d\n", in_vector_no);
-        return;
-    }
-
-    if( tdfatpg_only && !compression )
-    {
-        int PrimaryFault = 0;
-        int SecondFault = 0;
-        fptr fault_detect;
-        int i;
-
-        fault_under_test = choose_primary_fault();
-        while( fault_under_test )
-        {
-            if( fault_under_test -> test_tried )
-            {
-                fault_under_test = choose_second_fault( fault_under_test );
-                continue;
-            }
-
-            PrimaryFault = 0;
-            printf( "\n\nSSSSSSSSSSSSSSSSSSSSS fault no: %d  SSSSSSSSSSSSSSSSSS\n", fault_under_test -> fault_no );
             //display_fault( fault_under_test );
             switch(podem_Moon(fault_under_test,&current_backtracks, 1)) {
                 case TRUE:
@@ -398,15 +329,25 @@ test()
                     PrimaryFault = 0;
                     break;
             }
+            display_io_Moon();
             
             if( PrimaryFault )
             {
+                
                 for( i = 0; i < ncktin; i++ )
                 {
                     if( sort_wlist[i] -> value == U ) 
+                    {
                         sort_wlist[i] -> value = rand()&01;
-                }    
-            
+                        if( sort_wlist[i] -> pvspi != NULL )
+                            sort_wlist[i] -> pvspi -> p1_value = sort_wlist[i] -> value;
+                    }
+                    
+                    if( i == ncktin - 1 && sort_wlist[i] -> p1_value == U ) 
+                        sort_wlist[i] -> p1_value = rand()&01;
+                }
+                
+
                 /*
                 for( i = 0; i < detection_num; i++ )
                 {
@@ -418,10 +359,13 @@ test()
                 */
                 fault_sim_a_vector_Moon(&current_detect_num);
                 display_io_Moon();
+                add_pat_ini_test_set_Moon();
                 in_vector_no++;
                 fault_under_test = choose_primary_fault();
             }
+            //fault_under_test = choose_second_fault(fault_under_test);
         }   
+        printf("NEW pattern num:%d\n", in_vector_no);
         return;
     }
 

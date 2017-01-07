@@ -628,8 +628,10 @@ fault_sim_a_vector_frame01(flist,num_of_current_detect)
 
 }/* end of fault_sim_a_vecto */
 
+//fault_sim_a_vector_Moon(num_of_current_detect, fault_under_test)
 fault_sim_a_vector_Moon(num_of_current_detect)
     int *num_of_current_detect;
+    //fptr fault_under_test;
 {
     wptr w,faulty_wire,wtemp, wnext;
     /* array of 16 fptrs, which points to the 16 faults in a simulation packet  */
@@ -901,9 +903,12 @@ fault_sim_a_vector_Moon(num_of_current_detect)
 
 /* the following two loops are both for fault dropping  */  
 /* drop detected faults from the FRONT of the undetected fault list */
+    //int shithappen = 1;
     //printf("detect: ");
     while( f_detected ) {
         //printf("%d ", f_detected -> fault_no);
+        //if( f_detected -> fault_no == fault_under_test -> fault_no )
+        //    shithappen = 0;
         remove_fault( f_detected, 0 );
         (*num_of_current_detect) += f_detected -> eqv_fault_num;
         f_detected -> sim_detect = 0;
@@ -912,6 +917,9 @@ fault_sim_a_vector_Moon(num_of_current_detect)
         f_detected  = f;
     }
     //printf("\n");
+
+    //if( shithappen )
+    //    printf("NOOO!!! %d \n", fault_under_test -> fault_no);
 
     /*
     for( i = 0; i < detection_num; i++ )
@@ -2368,8 +2376,11 @@ wptr get_faulty_wire(f,fault_type)
         /* this case should not occur,
          * because we do not create fault in the NOT BUF gate input */
         case NOT:
+            *fault_type = f -> fault_type ^ 1;
+            break;
         case BUF:
-            fprintf(stdout,"something is fishy(get_faulty_net)...\n");
+            //fprintf(stdout,"something is fishy(get_faulty_net)...\n");
+            *fault_type = f -> fault_type;
             break;
 
             /*check every gate input of AND 
