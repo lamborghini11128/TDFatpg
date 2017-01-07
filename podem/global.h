@@ -41,6 +41,7 @@ int sim_vectors;           /* number of simulation vectors */
 int detection_num;         /* number of detection*/
 int compression;           /* flag to indicate perform compression */
 char **vectors;            /* vector set */
+int backtrack_limit;
 
 #else
 
@@ -73,6 +74,7 @@ extern int sim_vectors;           /* number of simulation vectors */
 extern int detection_num;          /* number of detection*/
 extern int compression;           /* flag to indicate perform compression */
 extern char **vectors;            /* vector set */
+extern int backtrack_limit;       /* dynamic change the limit;*/
 
 extern int  fault_sim_a_vector_frame01_Y(int*);
 extern void fault_sim_a_vector_frame01_Sun(int, int *);

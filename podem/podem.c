@@ -14,7 +14,7 @@
 #define B  4 // D_bar
 #define CONFLICT 2
 
-extern int backtrack_limit; // maximum number of backtracked allowed, defatult is 50
+//extern int backtrack_limit; // maximum number of backtracked allowed, defatult is 50
 extern int total_attempt_num;  // number of patterns per fault, default is 1
 int no_of_backtracks;  // current number of backtracks
 int find_test;  // TRUE when a test pattern is found

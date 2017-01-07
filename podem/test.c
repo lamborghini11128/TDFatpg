@@ -100,6 +100,13 @@ pi_x_num_static()
     return 1;
 }
 
+void
+set_backtrack_limit()
+{
+    //backtrack_limit = 50;
+    backtrack_limit = ncktin * 5/2;
+
+}
 
 test()
 {
@@ -127,6 +134,7 @@ test()
     total_detect_num = 0;
     undetect_fault = first_fault;
     fault_under_test = first_fault;
+    set_backtrack_limit();
 
     /* Fsim only mode */
     if(fsim_only)
@@ -300,8 +308,8 @@ test()
         fault_under_test = choose_primary_fault();
         while( fault_under_test )
         {
-            //if( fault_under_test -> test_tried )
-            if( fault_under_test -> fault_no != 3390 )
+            if( fault_under_test -> test_tried )
+            //if( fault_under_test -> fault_no != 3390 )
             {
                 fault_under_test = choose_second_fault( fault_under_test );
                 continue;
@@ -311,11 +319,11 @@ test()
             //display_fault( fault_under_test );
             switch(podem_Moon(fault_under_test,&current_backtracks, 1)) {
                 case TRUE:
-                    printf( "PrimaryFault %d \n", fault_under_test -> fault_no);
+                    //printf( "PrimaryFault %d \n", fault_under_test -> fault_no);
                     PrimaryFault = 1;
                     break;
                 case FALSE:
-                    printf("    remove %d \n", fault_under_test -> fault_no);
+                    //printf("    remove %d \n", fault_under_test -> fault_no);
                     fault_under_test->detect = REDUNDANT;
                     fault_under_test->test_tried = TRUE; // deal later
                     remove_fault( fault_under_test, 1 );
@@ -323,13 +331,13 @@ test()
                     PrimaryFault = 0;
                     break;
                 case MAYBE:
-                    printf("    MAYBE %d \n", fault_under_test -> fault_no);
+                    //printf("    MAYBE %d \n", fault_under_test -> fault_no);
                     fault_under_test->test_tried = TRUE; // deal later
                     fault_under_test = choose_second_fault( fault_under_test );
                     PrimaryFault = 0;
                     break;
             }
-            display_io_Moon();
+            //display_io_Moon();
             
             if( PrimaryFault )
             {
