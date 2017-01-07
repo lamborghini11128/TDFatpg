@@ -104,8 +104,8 @@ pi_x_num_static()
 void
 set_backtrack_limit()
 {
-    backtrack_limit = 400;
-    //backtrack_limit = ncktin * 5/2;
+    //backtrack_limit = 400;
+    backtrack_limit = ncktin * 5/2;
 
 }
 
