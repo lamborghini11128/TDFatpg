@@ -26,6 +26,8 @@ static void STC_noDict_naive( vector<pptr>* );
 static void STC_fault_sim( vector<pptr>* ); 
 static void STC_fault_sim2( vector<pptr>* ); 
 
+static void STC_ReverseOrderFaultSim(vector<String> &);
+
 // Local helper funciton
 static void getPatternList( vector<pptr>* );
 static bool isCompatible( pptr, pptr );
@@ -39,8 +41,8 @@ static void setCktPiValue_partial( pptr );
 static int  fault_undropped_num();   
 static vector<pptr> IniTestSet;
 static vector<String> TestSet_Moon;
-   
-
+static void setPiValue_Moon( const String &);
+static void printPList_Moon( const vector<String> &);
 void initialize_vars()
 {
     return;
@@ -91,6 +93,8 @@ void
 test_compression()
 {
     
+    /*
+    // version XYZ.
     if(!compression)     return;
     printf("test_compression()\n");
     vector<pptr> &pList = IniTestSet; 
@@ -101,7 +105,57 @@ test_compression()
     cout << "Stage I Test Size :" << IniTestSet.size() << endl;
     STC_fault_sim2(&pList);
     //STC_fault_sim(&pList);
+    */
 
+    // version Moon
+    STC_ReverseOrderFaultSim( TestSet_Moon );
+    cout << "after ROFS:\n";
+    printPList_Moon(TestSet_Moon);
+}
+
+void
+STC_ReverseOrderFaultSim( vector<String> & testSet )
+{
+    int dummyInt;
+    // reset fault list first
+    generate_fault_list_Moon();
+    
+    for( int i = testSet.size()-1; i >=0; --i){
+       if( testSet[i].empty() ) continue;
+
+        setPiValue_Moon( testSet[i] );
+        int no_use = fault_sim_a_vector_Moon(&dummyInt);
+        if ( no_use ){
+            testSet[i] = "";
+            printf(">> #%d is no use.\n", i);
+        }
+    }    
+ 
+}
+
+void printPList_Moon(const vector<String> &testSet)
+{
+    int cntr = 0;
+    for (int i = 0, n = testSet.size(); i < n; i++){
+        if(testSet[i].empty()) continue;
+        ++cntr;
+        cout << "T'";
+        for (int j = 0, n2 = testSet[i].size(); j < n2-1; ++j){
+            cout << testSet[i][j];
+        }
+        cout << " " << testSet[i][testSet[i].size()-1] <<"'\n";
+    }
+    cout << "# total pattern: " << cntr << endl;
+}
+
+void
+setPiValue_Moon( const String & pat )
+{
+    for (int i = 0; i < ncktin; ++i){
+        sort_wlist[i]->p1_value = ( pat[i] == '1' ? 1:0 );
+        sort_wlist[i+1]->value  = ( pat[i] == '1' ? 1:0 );
+    }
+    sort_wlist[0]->value = ( pat[ncktin] == '1' ? 1:0 );
 }
 
 void

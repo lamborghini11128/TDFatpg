@@ -78,5 +78,6 @@ extern int  fault_sim_a_vector_frame01_Y(int*);
 extern void fault_sim_a_vector_frame01_Sun(int, int *);
 extern fptr choose_primary_fault();
 extern fptr choose_second_fault(fptr);
-
+extern void generate_fault_list_Moon(); 
+extern int fault_sim_a_vector_Moon(int *);
 #endif
