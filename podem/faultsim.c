@@ -723,6 +723,7 @@ fault_sim_a_vector_Moon(num_of_current_detect)
             printf( " Sim falut next no: %d\n", ftemp-> fault_no );
         */
 
+        //printf("falut nonnniniini: %d %d %d\n", f -> fault_no, sort_wlist[ f -> to_swlist ] -> value, sort_wlist[ f -> to_swlist] -> p1_value );
 
         if( f -> detect == REDUNDANT ) 
         {
@@ -734,7 +735,8 @@ fault_sim_a_vector_Moon(num_of_current_detect)
             /* consider only active (aka. excited) fault
              * (sa1 with correct output of 0 or sa0 with correct output of 1) */
             if ( f->fault_type != sort_wlist[f->to_swlist]->value && 
-                 f->fault_type == sort_wlist[f->to_swlist]->p1_value) {
+                 2 != sort_wlist[f->to_swlist]->value && 
+                 f->fault_type == sort_wlist[f->to_swlist]->p1_value ) {
                  //printf("falut nonnniniini: %d %d\n", f -> fault_no, f -> sim_detect );
 
                 /* if f is a primary output or is directly connected to an primary output
@@ -744,6 +746,7 @@ fault_sim_a_vector_Moon(num_of_current_detect)
                     f -> pnext_detected = f_detected;
                     f_detected = f;
                     f -> sim_detect = 1;
+                    //printf("    detect: %d\n", f -> fault_no );
                         //continue;
                 }
                 else {
@@ -759,10 +762,13 @@ fault_sim_a_vector_Moon(num_of_current_detect)
                             first_faulty_wire->flag |= FAULTY;
                         }
 
+                        //printf("Here fault no: %d\n", f -> fault_no );
                         /* add the fault to the simulated fault list and inject the fault */
+                        //printf("INJECT: %x\n", sort_wlist[f -> to_swlist] -> wire_value2);
                         simulated_fault_list[num_of_fault] = f;
                         inject_fault_value(sort_wlist[f->to_swlist], num_of_fault,
                                 f->fault_type); 
+                        //printf("INJECT: %x\n", sort_wlist[f -> to_swlist] -> wire_value2);
 
                         /* mark the wire as having a fault injected 
                          * and schedule the outputs of this gate */
@@ -792,6 +798,7 @@ fault_sim_a_vector_Moon(num_of_current_detect)
                                 f -> pnext_detected = f_detected;
                                 f_detected = f;
                                 f -> sim_detect = 1;
+                                //printf("    detect: %d\n", f -> fault_no );
                             }
 
                             else {
@@ -873,6 +880,7 @@ fault_sim_a_vector_Moon(num_of_current_detect)
                                         simulated_fault_list[i] -> sim_detect = 1;
                                         simulated_fault_list[i] -> pnext_detected = f_detected;
                                         f_detected = simulated_fault_list[i];
+                                        //printf("    detect: %d\n", f_detected -> fault_no );
                                     //simulated_fault_list[i]->detect = TRUE;  // then the fault is detected
                                 }
                             }
@@ -893,10 +901,9 @@ fault_sim_a_vector_Moon(num_of_current_detect)
 
 /* the following two loops are both for fault dropping  */  
 /* drop detected faults from the FRONT of the undetected fault list */
-   
-    printf("detect: ");
+    //printf("detect: ");
     while( f_detected ) {
-        printf("%d ", f_detected -> fault_no);
+        //printf("%d ", f_detected -> fault_no);
         remove_fault( f_detected, 0 );
         (*num_of_current_detect) += f_detected -> eqv_fault_num;
         f_detected -> sim_detect = 0;
@@ -904,7 +911,7 @@ fault_sim_a_vector_Moon(num_of_current_detect)
         f_detected -> pnext_detected = NIL(struct fault);
         f_detected  = f;
     }
-    printf("\n");
+    //printf("\n");
 
     /*
     for( i = 0; i < detection_num; i++ )

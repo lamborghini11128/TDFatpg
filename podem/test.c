@@ -61,7 +61,14 @@ pi_x_num()
         for( i = 0; i < ncktin; i++ )
         {
             if( sort_wlist[i] -> value == U ) 
+            {
                 sort_wlist[i] -> value = rand()&01;
+                if( sort_wlist[i] -> pvspi != NULL )
+                    sort_wlist[i] -> pvspi -> p1_value = sort_wlist[i] -> value;
+            }
+            
+            if( i == ncktin - 1 && sort_wlist[i] -> p1_value == U ) 
+                sort_wlist[i] -> p1_value = rand()&01;
         }
         return 1;
     }
@@ -159,7 +166,6 @@ test()
             }
 
             PrimaryFault = 0;
-            printf( "\n\nSSSSSSSSSSSSSSSSSSSSS fault no: %d   SSSSSSSSSSSSSSSSSS\n", fault_under_test -> fault_no );
             switch(podem_Moon(fault_under_test,&current_backtracks, 1)) {
                 case TRUE:
                     //printf( "PrimaryFault %d \n", fault_under_test -> fault_no);
@@ -232,8 +238,16 @@ test()
                 for( i = 0; i < ncktin; i++ )
                 {
                     if( sort_wlist[i] -> value == U ) 
+                    {
                         sort_wlist[i] -> value = rand()&01;
+                        if( sort_wlist[i] -> pvspi != NULL )
+                            sort_wlist[i] -> pvspi -> p1_value = sort_wlist[i] -> value;
+                    }
+                    
+                    if( i == ncktin - 1 && sort_wlist[i] -> p1_value == U ) 
+                        sort_wlist[i] -> p1_value = rand()&01;
                 }
+
                 fault_sim_a_vector_Moon(&current_detect_num);
                 display_io_Moon();
                 in_vector_no++;
@@ -250,6 +264,97 @@ test()
             fault_under_test = choose_primary_fault();
 
         }
+        printf("NEW Dynamic Only  pattern num:%d\n", in_vector_no);
+        return;
+    }
+
+    /// debug 
+    if( tdfatpg_only && !compression )
+    {
+        int PrimaryFault = 0;
+        int SecondFault = 0;
+        fptr fault_detect;
+        int i;
+
+        fault_under_test = choose_primary_fault();
+        while( fault_under_test )
+        {
+            PrimaryFault = 0;
+            
+            //if( fault_under_test -> fault_no !=  179 )
+            if( fault_under_test -> test_tried )
+            {
+                fault_under_test = choose_second_fault( fault_under_test );
+                continue;
+            }
+            
+            //printf( "\n\nSSSSSSSSSSSSSSSSSSSSS fault no: %d  SSSSSSSSSSSSSSSSSS\n", fault_under_test -> fault_no );
+            //display_fault( fault_under_test );
+            switch(podem_Moon(fault_under_test,&current_backtracks, 1)) {
+                case TRUE:
+                    //printf( "PrimaryFault %d \n", fault_under_test -> fault_no);
+                    PrimaryFault = 1;
+                    break;
+                case FALSE:
+                    //printf("    remove %d \n", fault_under_test -> fault_no);
+                    fault_under_test->detect = REDUNDANT;
+                    fault_under_test->test_tried = TRUE; // deal later
+                    remove_fault( fault_under_test, 1 );
+                    fault_under_test = choose_primary_fault();
+                    PrimaryFault = 0;
+                    break;
+                case MAYBE:
+                    //printf("    MAYBE %d \n", fault_under_test -> fault_no);
+                    fault_under_test->test_tried = TRUE; // deal later
+                    fault_under_test = choose_second_fault( fault_under_test );
+                    PrimaryFault = 0;
+                    break;
+            }
+
+           /* 
+            for( i = 0; i < detection_num; i++ )
+            {
+                printf("det{%d}:", i);
+                for( f = det_flist[i]; f; f = f -> pnext)
+                    printf("%d  ", f -> fault_no );
+                printf("\n");
+            }
+            */
+            if( PrimaryFault )
+            {
+                
+                for( i = 0; i < ncktin; i++ )
+                {
+                    
+                    if( sort_wlist[i] -> value == U ) 
+                    {
+                        sort_wlist[i] -> value = rand()&01;
+                        if( sort_wlist[i] -> pvspi != NULL )
+                            sort_wlist[i] -> pvspi -> p1_value = sort_wlist[i] -> value;
+                    }
+                    
+                    if( i == ncktin - 1 && sort_wlist[i] -> p1_value == U ) 
+                        sort_wlist[i] -> p1_value = rand()&01;
+                }
+                
+                /*
+                for( i = 0; i < detection_num; i++ )
+                {
+                    printf("det{%d}:", i);
+                    for( f = det_flist[i]; f; f = f -> pnext)
+                        printf("%d  ", f -> fault_no );
+                    printf("\n");
+                }
+                */
+                fault_sim_a_vector_Moon(&current_detect_num);
+                display_io_Moon();
+                in_vector_no++;
+                fault_under_test = choose_primary_fault();
+            }
+            //fault_under_test = choose_second_fault( fault_under_test );
+
+        }
+        printf("NEW pattern num:%d\n", in_vector_no);
         return;
     }
 
@@ -270,15 +375,15 @@ test()
             }
 
             PrimaryFault = 0;
-            //printf( "\n\nSSSSSSSSSSSSSSSSSSSSS fault no: %dSSSSSSSSSSSSSSSSSS\n", fault_under_test -> fault_no );
+            printf( "\n\nSSSSSSSSSSSSSSSSSSSSS fault no: %d  SSSSSSSSSSSSSSSSSS\n", fault_under_test -> fault_no );
             //display_fault( fault_under_test );
             switch(podem_Moon(fault_under_test,&current_backtracks, 1)) {
                 case TRUE:
-                    //printf( "PrimaryFault %d \n", fault_under_test -> fault_no);
+                    printf( "PrimaryFault %d \n", fault_under_test -> fault_no);
                     PrimaryFault = 1;
                     break;
                 case FALSE:
-                    //printf("    remove %d \n", fault_under_test -> fault_no);
+                    printf("    remove %d \n", fault_under_test -> fault_no);
                     fault_under_test->detect = REDUNDANT;
                     fault_under_test->test_tried = TRUE; // deal later
                     remove_fault( fault_under_test, 1 );
@@ -286,7 +391,7 @@ test()
                     PrimaryFault = 0;
                     break;
                 case MAYBE:
-                    //printf( "MAYBE %d \n", fault_under_test -> fault_no);
+                    printf("    MAYBE %d \n", fault_under_test -> fault_no);
                     fault_under_test->test_tried = TRUE; // deal later
                     fault_under_test = choose_second_fault( fault_under_test );
                     PrimaryFault = 0;

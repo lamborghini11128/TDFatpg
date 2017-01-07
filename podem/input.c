@@ -537,6 +537,7 @@ input_frame01(infile)
                       break;
         }
     }
+
     fclose(in);
     create_structure_frame01();
     fprintf(stdout,"\n");
@@ -641,6 +642,8 @@ create_structure_frame01()
     }
 
     wpvs -> nxtpi = LastPi;
+    LastPi -> pvspi = wpvs;
+    printf( "wpvs %s next is %s\n", wpvs -> name, wpvs -> nxtpi -> name);
 
     /*
     for (i = 0; i < ncktin; i++) {

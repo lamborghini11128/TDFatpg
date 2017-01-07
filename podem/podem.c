@@ -206,12 +206,12 @@ podem_Moon(fault, current_backtracks, isPrimaryFault)
     int set_uniquely_implied_value_Moon();
     int attempt_num = 0;  // counts the number of pattern generated so far for the given fault
     void display_fault();
-
     /* initialize all circuit wires to unknown */
     if( isPrimaryFault )
     {
         for (i = 0; i < ncktwire; i++) {
             sort_wlist[i]->value = U;
+            sort_wlist[i]->p1_value = U;
         }
     }
     no_of_backtracks = 0;
@@ -236,6 +236,7 @@ podem_Moon(fault, current_backtracks, isPrimaryFault)
         case FALSE: 
             break;  //if no PI is reached, keep on backtracing. Fig 7.A 
     }
+    //display_io_Moon();
 
     /* loop in Fig 7.ABC 
      * quit the loop when either one of the three conditions is met: 
@@ -247,7 +248,10 @@ podem_Moon(fault, current_backtracks, isPrimaryFault)
 
         /* check if test possible.   Fig. 7.1 */
         if (wpi = test_possible_Moon(fault)) {
-            wpi->flag |= CHANGED;
+            wpi -> flag |= CHANGED;
+            if( wpi -> pvspi != NULL )
+                wpi -> pvspi -> p1_flag |= CHANGED;
+
             /* insert a new PI into decision_tree */ 
             wpi->pnext = decision_tree;
             decision_tree = wpi;
@@ -257,19 +261,36 @@ podem_Moon(fault, current_backtracks, isPrimaryFault)
             while (decision_tree && !wpi) {
                 /* if both 01 already tried, backtrack. Fig.7.7 */
                 if (decision_tree->flag & ALL_ASSIGNED) {
-                    decision_tree->flag &= ~ALL_ASSIGNED;  // clear the ALL_ASSIGNED flag
-                    decision_tree->value = U; // do not assign 0 or 1
-                    decision_tree->flag |= CHANGED; // this PI has been changed
+
+                    decision_tree -> flag             &= ~ALL_ASSIGNED;  // clear the ALL_ASSIGNED flag
+                    decision_tree -> value             = U;              // do not assign 0 or 1
+                    decision_tree -> flag             |= CHANGED;        // this PI has been changed
+                    if( decision_tree -> pvspi != NULL )
+                    {
+                        decision_tree -> pvspi -> p1_flag &= ~ALL_ASSIGNED;  // clear the ALL_ASSIGNED flag
+                        decision_tree -> pvspi -> p1_value = U;              // do not assign 0 or 1
+                        decision_tree -> pvspi -> p1_flag |= CHANGED;        // this PI has been changed
+                    }
+                    
                     /* remove this PI in decision tree.  see dashed nodes in Fig 6 */
                     wtemp = decision_tree;
                     decision_tree = decision_tree->pnext;
                     wtemp->pnext = NIL(struct WIRE);
                 }  
                 /* else, flip last decision, flag ALL_ASSIGNED. Fig. 7.8 */
-                else {
-                    decision_tree->value = decision_tree->value ^ 1; // flip last decision
-                    decision_tree->flag |= CHANGED; // this PI has been changed
-                    decision_tree->flag |= ALL_ASSIGNED;
+                else 
+                {
+                    decision_tree -> value             = decision_tree->value ^ 1; // flip last decision
+                    decision_tree -> flag             |= CHANGED; // this PI has been changed
+                    decision_tree -> flag             |= ALL_ASSIGNED;
+                    if( decision_tree -> pvspi != NULL )
+                    {
+                        decision_tree -> pvspi -> p1_value = decision_tree->value; // flip last decision
+                        decision_tree -> pvspi -> p1_flag |= CHANGED; // this PI has been changed
+                        decision_tree -> pvspi -> p1_flag |= ALL_ASSIGNED; // this PI has been changed
+                    }
+
+
                     no_of_backtracks++;
                     wpi = decision_tree; 
                 }
@@ -282,6 +303,7 @@ podem_Moon(fault, current_backtracks, isPrimaryFault)
 again:  if (wpi) {
             sim();
             sim_Moon();
+            //printf("    wpi %s %d => fault %d %d\n", wpi -> name, wpi -> value, fault -> node -> owire[0] -> value, fault -> node -> owire[0] -> p1_value);
             if (wfault = fault_evaluate_Moon(fault)) forward_imply(wfault);
             if (check_test()) {
                 find_test = TRUE;
@@ -329,6 +351,8 @@ again:  if (wpi) {
         wtemp = wpi->pnext;
         wpi->pnext = NIL(struct WIRE);
         wpi->flag &= ~ALL_ASSIGNED;
+        if( wpi -> pvspi != NULL )
+            wpi-> pvspi -> p1_flag &= ~ALL_ASSIGNED;
     }
     *current_backtracks = no_of_backtracks;
     unmark_propagate_tree(fault->node);
@@ -345,7 +369,7 @@ again:  if (wpi) {
                     case U: break;//cktin[i]->value = rand()&01; break; // random fill U
                 }
             }
-            //display_io();
+            //display_io_Moon();
         }
         else fprintf(stdout, "\n");  // do not random fill when multiple patterns per fault
         return(TRUE);
@@ -800,9 +824,12 @@ fault_evaluate_Moon(fault)
 
     if (fault->io) { // if fault is on GUT gate output
         w = fault->node->owire[0]; // w is GUT output wire
+        //printf( "   fault evaluate: %d %d\n", w -> value, w -> p1_value );
         if (w->value == U || w -> p1_value == U) return(NULL);
         if (fault->fault_type == 0 && w->value == 1 && w -> p1_value == 0) w->value = D; // D means 1/0
+        if (fault->fault_type == 0 && w->value == D && w -> p1_value == 1) w->value = 1; // D means 1/0
         if (fault->fault_type == 1 && w->value == 0 && w -> p1_value == 1) w->value = B; // B_bar 0/1
+        if (fault->fault_type == 1 && w->value == B && w -> p1_value == 0) w->value = 0; // B_bar 0/1
         return(w);
     }
     else { // if fault is GUT gate input
@@ -811,7 +838,9 @@ fault_evaluate_Moon(fault)
         else {
             temp1 = w->value;
             if (fault->fault_type == 0 && w->value == 1 && w -> p1_value == 0) w->value = D;
+            if (fault->fault_type == 0 && w->value == D && w -> p1_value == 1) w->value = 1;
             if (fault->fault_type == 1 && w->value == 0 && w -> p1_value == 1) w->value = B;
+            if (fault->fault_type == 1 && w->value == B && w -> p1_value == 0) w->value = 0;
             if (fault->node->type == OUTPUT) return(NULL);
             evaluate(fault->node);  // five-valued, evaluate one gate only, sim.c
             w->value = temp1;

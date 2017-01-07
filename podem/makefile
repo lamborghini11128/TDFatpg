@@ -1,6 +1,6 @@
 #
 
-CFLAGS = -Wall -O3
+CFLAGS = -Wall -g
 
 FILES = tpgmain.o input.o level.o sim.o podem.o test.o init_flist.o faultsim.o display.o tdfsim.o rchctrl.o podem_X.o compression.o
 
@@ -17,7 +17,7 @@ level.o : atpg.h miscell.h
 	gcc $(CFLAGS) -c level.c
 sim.o : atpg.h miscell.h logic_tbl.h
 	gcc $(CFLAGS) -c sim.c
-podem.o : atpg.h miscell.h
+podem.o : atpg.h miscell.h podem.c
 	gcc $(CFLAGS) -c podem.c
 podem_X.o : atpg.h miscell.h podem_X.c
 	gcc $(CFLAGS) -c podem_X.c
