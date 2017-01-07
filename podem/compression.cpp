@@ -19,6 +19,7 @@ typedef std::string String;
 
 extern "C" void test_compression();
 extern "C" void add_pat_ini_test_set();
+extern "C" void add_pat_ini_test_set_Moon();
 extern "C" void initialize_vars();
 
 static void STC_noDict_naive( vector<pptr>* ); 
@@ -37,6 +38,7 @@ static void setCktPiValue( String );
 static void setCktPiValue_partial( pptr );   
 static int  fault_undropped_num();   
 static vector<pptr> IniTestSet;
+static vector<String> TestSet_Moon;
    
 
 void initialize_vars()
@@ -67,6 +69,22 @@ add_pat_ini_test_set()
             p = ptemp;
         }
     }
+}
+
+void
+add_pat_ini_test_set_Moon()
+{
+    //static vector<pptr> IniTestSet;
+    pptr p, ptemp;
+    p = NULL;
+    String pattern;
+    for( int i = 0; i < ncktin; i++ )
+        pattern += ( sort_wlist[i] -> p1_value == 1)? "1" : "0";
+
+    pattern += ( sort_wlist[0] -> value == 1)? "1" : "0";
+    TestSet_Moon.push_back( pattern );
+
+
 }
 
 void 

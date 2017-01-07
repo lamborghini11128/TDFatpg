@@ -348,6 +348,7 @@ test()
                 */
                 fault_sim_a_vector_Moon(&current_detect_num);
                 display_io_Moon();
+                add_pat_ini_test_set_Moon();
                 in_vector_no++;
                 fault_under_test = choose_primary_fault();
             }
