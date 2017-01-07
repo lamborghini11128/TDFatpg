@@ -84,6 +84,49 @@ display_io()
     return;
 }/* end of display_io */
 
+display_io_Moon()
+{
+    register int i;
+    char unpack();
+
+
+    fprintf(stdout,"T\'");
+    for (i = 0; i < ncktin; i++) {
+        switch (cktin[i]->p1_value ) {
+            case 0: fprintf(stdout,"0"); break;
+            case 1: fprintf(stdout,"1"); break;
+            case U: fprintf(stdout,"x"); break;
+            case D: fprintf(stdout,"1"); break;
+            case B: fprintf(stdout,"0"); break;
+        }
+    }
+    
+    switch (cktin[ 0 ]->value) {
+        case 0: fprintf(stdout," 0"); break;
+        case 1: fprintf(stdout," 1"); break;
+        case U: fprintf(stdout," x"); break;
+        case D: fprintf(stdout," 1"); break;
+        case B: fprintf(stdout," 0"); break;
+    }
+
+    fprintf(stdout,"'");
+/*
+    fprintf(stdout," ");
+    for (i = 0; i < ncktout; i++) {
+        switch (cktout[i]->value) {
+            case 0: fprintf(stdout,"0"); break;
+            case 1: fprintf(stdout,"1"); break;
+            case U: fprintf(stdout,"x"); break;
+            case D: fprintf(stdout,"D"); break;
+            case B: fprintf(stdout,"B"); break;
+        }
+    }
+*/
+    fprintf(stdout,"\n");
+    return;
+}/* end of display_io */
+
+
 display_io_frame01()
 {
     register int i;

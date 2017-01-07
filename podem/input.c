@@ -521,22 +521,23 @@ input_frame01(infile)
 
             case 'D': debug = 1 - debug; break;
 
-            case 'g': newgate_frame01(); break;
+            case 'g': newgate(); break;
             //case 'g': newgate(); break;
 
-            case 'i': set_input_frame01(0); break;
+            case 'i': set_input(0); break;
 
-            case 'p': set_input_frame01(1); break;
+            case 'p': set_input(1); break;
 
-            case 'o': set_output_frame01(); break;
+            case 'o': set_output(); break;
 
-            case 'n': set_output_frame01(); break;
+            case 'n': set_output(); break;
 
             default:
                       fprintf(stderr,"Unrecognized command around line %d in file %s\n",lineno,filename);
                       break;
         }
     }
+
     fclose(in);
     create_structure_frame01();
     fprintf(stdout,"\n");
@@ -613,39 +614,48 @@ create_structure()
     return;
 }/* end of create_structure */
 
-// for tdf atpg
 create_structure_frame01()
 {
-    wptr w;
-    wptr w_temp;
+    wptr w, wpvs, wnxt;
     nptr n;
-    int i, j, k;
+    int i, j, k;    
+
     char wire_name[25];
 
-    sprintf(wire_name, "SecondPattern");
-    w = getwire( wire_name);
+    sprintf(wire_name, "FirstPatternLast");
+    LastPi = ALLOC( 1, struct WIRE );
+    LastPi -> name = wire_name;
+    LastPi -> flag |= INPUT;
 
-    ncktin++; // second patter wire 
-
-
-    if (!(cktin = ALLOC(ncktin,wptr))) error("No More Room!"); // array of PI
+    if (!(cktin = ALLOC(ncktin,wptr))) error("No More Room!"); // array of PI 
     if (!(cktout = ALLOC(ncktout,wptr))) error("No More Room!"); // array of PO 
 
-
+    wpvs = NULL;
     for (i = 0; i < ncktin; i++) {
-        if ( i == 0 )
-        {
-            cktin[i] = w;
-        }
-        else
-        {
-            cktin[i] = temp_cktin[i - 1];
-            cktin[i] -> pvspi = w_temp;
-            w_temp   -> nxtpi = cktin[i];
-        }
+        cktin[i] =  temp_cktin[i];
         cktin[i] -> flag |= INPUT;
-        w_temp = cktin[i];
+        cktin[i] -> pvspi = wpvs;
+        if( wpvs )
+            wpvs     -> nxtpi = cktin[i];
+
+        wpvs = cktin[i];
     }
+
+    wpvs -> nxtpi = LastPi;
+    LastPi -> pvspi = wpvs;
+    printf( "wpvs %s next is %s\n", wpvs -> name, wpvs -> nxtpi -> name);
+
+    /*
+    for (i = 0; i < ncktin; i++) {
+        printf( "PI:%s  ", cktin[i] -> name );
+        if( cktin[i] -> pvspi )
+            printf( "%s  ", cktin[i] -> pvspi -> name );
+        if( cktin[i] -> nxtpi )
+            printf( "%s  ", cktin[i] -> nxtpi -> name );
+        printf("\n");
+
+    }
+*/
     cfree(temp_cktin);
 
     for (i = 0; i < ncktout; i++) {
@@ -653,30 +663,6 @@ create_structure_frame01()
         cktout[i]->flag |= OUTPUT;
     }
     cfree(temp_cktout);
-
-    /* reconnect the wire */
-
-    for (i = 0; i < HASHSIZE; i++) {
-        for (n = hash_nlist[i]; n; n = n->hnext) { // for each node n in the circuit
-            if( n -> frame == 1 )
-                continue;
-
-            for (j = 0; j < n->nin; j++) {  // for the j-th input
-                if( n -> iwire[j] -> flag & INPUT )
-                {
-                    w = n -> iwire[j];    
-                    w_temp = n -> fnext -> iwire[j];
-                    //printf( "replace %s with  %s \n", n -> fnext -> iwire[j] -> name, w -> pvspi -> name);
-                    n -> fnext -> iwire[j] = w -> pvspi;
-                    w -> pvspi -> nout ++;
-                    //w_temp -> nin = 0;
-                    w_temp -> nout --;
-
-                }
-            }
-        }// for n
-    } // for i   
-
 
     /* foreach wire, create inode array and onode array*/
     for (i = 0; i < HASHSIZE; i++) {
@@ -705,33 +691,10 @@ create_structure_frame01()
             } // for j
         }// for n
     } // for i
-
-
-    //// remove unused pi (pi_f1) 
-    
-    for (i = 0; i < HASHSIZE; i++) {
-        for (w = hash_wlist[i]; w; w = w->hnext) {
-            //fprintf(stdout,"%s ",w->name);
-            
-            if( w -> nin == 0 && w -> nout == 0 )
-            {
-                if( w == hash_wlist[i] )
-                    hash_wlist[i] = w -> hnext;
-                else
-                    w_temp -> hnext = w -> hnext;
-                ncktwire--;
-            }
-            else
-                w_temp = w;
-            
-        }
-    }
-
-
-
     return;
-
 }/* end of create_structure */
+
+
 
 
 

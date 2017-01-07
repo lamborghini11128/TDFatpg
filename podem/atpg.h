@@ -19,6 +19,7 @@ struct WIRE {
     int value;             /* logic value [0|1|2] of the wire, fault-free sim for pattern 2*/
     int p1_value;          /* logic value [0|1|2] of the wire, fault-free sim for pattern 1*/
     int flag;              /* flag word */
+    int p1_flag;           /* flag word */
     wptr pnext;            /* general usage link */
     wptr hnext;            /* hash bucket link */
     int level;             /* level of the wire */
@@ -34,6 +35,7 @@ struct WIRE {
 
     wptr pvspi;             /* previous pi for second pattern atpg */
     wptr nxtpi;             /* previous pi for second pattern atpg */
+    int  fix;               /* for dynamic */
 };
 
 // a node is a gate

@@ -18,6 +18,7 @@ wptr *cktout;              /* output wire list */
 nptr *cktnode_f0;          /* frame 0 node list */
 wptr *cktout_f0;           /* output wire list */
 wptr *cktout_f1;           /* output wire list */
+wptr LastPi;               /* pattern 1 last pi */
 wptr hash_wlist[HASHSIZE]; /* hashed wire list */
 nptr hash_nlist[HASHSIZE]; /* hashed node list */
 fptr *det_flist;           /* detection fault list */
@@ -40,6 +41,7 @@ int sim_vectors;           /* number of simulation vectors */
 int detection_num;         /* number of detection*/
 int compression;           /* flag to indicate perform compression */
 char **vectors;            /* vector set */
+int backtrack_limit;
 
 #else
 
@@ -49,6 +51,7 @@ extern wptr *cktout;              /* output wire list */
 extern nptr *cktnode_f0;          /* frame 0 node list */
 extern wptr *cktout_f0;              /* output wire list */
 extern wptr *cktout_f1;              /* output wire list */
+extern wptr LastPi;               /* pattern 1 last pi */
 extern wptr hash_wlist[HASHSIZE]; /* hashed wire list */
 extern nptr hash_nlist[HASHSIZE]; /* hashed node list */
 extern fptr *det_flist;           /* detection fault list */
@@ -71,10 +74,13 @@ extern int sim_vectors;           /* number of simulation vectors */
 extern int detection_num;          /* number of detection*/
 extern int compression;           /* flag to indicate perform compression */
 extern char **vectors;            /* vector set */
+extern int backtrack_limit;       /* dynamic change the limit;*/
 
 extern int  fault_sim_a_vector_frame01_Y(int*);
 extern void fault_sim_a_vector_frame01_Sun(int, int *);
 extern fptr choose_primary_fault();
 extern fptr choose_second_fault(fptr);
-
+extern void generate_fault_list_Moon(); 
+extern int fault_sim_a_vector_Moon(int *);
+extern int fault_sim_a_vector_Moon_num(int *);
 #endif
