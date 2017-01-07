@@ -628,10 +628,83 @@ fault_sim_a_vector_frame01(flist,num_of_current_detect)
 
 }/* end of fault_sim_a_vecto */
 
-fault_sim_a_vector_Moon(num_of_current_detect)
-    int *num_of_current_detect;
+int
+fault_sim_a_vector_Moon(num)
+    int *num;
 {
-    wptr w,faulty_wire,wtemp, wnext;
+    fptr f_detected, f,  fault_sim_Moon_int();
+    f_detected = fault_sim_Moon_int();
+/* the following two loops are both for fault dropping  */  
+/* drop detected faults from the FRONT of the undetected fault list */
+    //printf("detect: ");
+    int no_use = TRUE;
+    while( f_detected ) {
+        //printf("%d ", f_detected -> fault_no);
+        if( f_detected -> det_num != detection_num )
+            no_use = FALSE;
+        remove_fault( f_detected, 0 );
+
+        f_detected -> sim_detect = 0;
+        f = f_detected -> pnext_detected;
+        f_detected -> pnext_detected = NIL(struct fault);
+        f_detected  = f;
+    }
+    //printf("\n");
+
+    /*
+    for( i = 0; i < detection_num; i++ )
+    {
+        printf("%d:", i);
+        for( f = det_flist[i]; f; f = f -> pnext )
+            printf("%d ", f -> fault_no);
+        printf("\n");
+    
+    }
+   */
+   return no_use;
+}/* end of fault_sim_a_vecto */
+
+int
+fault_sim_a_vector_Moon_num(num)
+    int *num;
+{
+    fptr f_detected, f,  fault_sim_Moon_int();
+    f_detected = fault_sim_Moon_int();
+/* the following two loops are both for fault dropping  */  
+/* drop detected faults from the FRONT of the undetected fault list */
+    //printf("detect: ");
+    int total_Det = 0;
+    while( f_detected ) {
+        //printf("%d ", f_detected -> fault_no);
+        ++total_Det;
+        //remove_fault( f_detected, 0 );
+        f_detected->det_num += 1; // XXX
+        f_detected->detect_by[f_detected->det_num%detection_num] = (*num);
+
+        f_detected -> sim_detect = 0;
+        f = f_detected -> pnext_detected;
+        f_detected -> pnext_detected = NIL(struct fault);
+        f_detected  = f;
+    }
+    //printf("\n");
+
+    /*
+    for( i = 0; i < detection_num; i++ )
+    {
+        printf("%d:", i);
+        for( f = det_flist[i]; f; f = f -> pnext )
+            printf("%d ", f -> fault_no);
+        printf("\n");
+    
+    }
+   */
+   return total_Det;
+}/* end of fault_sim_a_vecto */
+
+fptr
+fault_sim_Moon_int()
+{
+        wptr w,faulty_wire,wtemp, wnext;
     /* array of 16 fptrs, which points to the 16 faults in a simulation packet  */
     fptr simulated_fault_list[num_of_pattern];
     fptr f,ftemp, f_detected;
@@ -650,7 +723,6 @@ fault_sim_a_vector_Moon(num_of_current_detect)
     f_detected = NIL( struct FAULT);
     /* num_of_current_detect is used to keep track of the number of undetected
      * faults detected by this vector, initialize it to zero */
-    *num_of_current_detect = 0;
 
     /* Keep track of the minimum wire index of 16 faults in a packet.
      * the start_wire_index is used to keep track of the
@@ -898,36 +970,8 @@ fault_sim_a_vector_Moon(num_of_current_detect)
 
         f = ftemp;
     }
-
-/* the following two loops are both for fault dropping  */  
-/* drop detected faults from the FRONT of the undetected fault list */
-    //printf("detect: ");
-    while( f_detected ) {
-        //printf("%d ", f_detected -> fault_no);
-        remove_fault( f_detected, 0 );
-        (*num_of_current_detect) += f_detected -> eqv_fault_num;
-        f_detected -> sim_detect = 0;
-        f = f_detected -> pnext_detected;
-        f_detected -> pnext_detected = NIL(struct fault);
-        f_detected  = f;
-    }
-    //printf("\n");
-
-    /*
-    for( i = 0; i < detection_num; i++ )
-    {
-        printf("%d:", i);
-        for( f = det_flist[i]; f; f = f -> pnext )
-            printf("%d ", f -> fault_no);
-        printf("\n");
-    
-    }
-   */
-   return;
-}/* end of fault_sim_a_vecto */
-
-
-
+    return f_detected;
+}
 
 /* fault simulate a single test vector */
 fault_sim_a_vector_frame01_X(num_of_current_detect)

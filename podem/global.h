@@ -80,4 +80,5 @@ extern fptr choose_primary_fault();
 extern fptr choose_second_fault(fptr);
 extern void generate_fault_list_Moon(); 
 extern int fault_sim_a_vector_Moon(int *);
+extern int fault_sim_a_vector_Moon_num(int *);
 #endif
