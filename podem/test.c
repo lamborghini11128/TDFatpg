@@ -103,8 +103,8 @@ pi_x_num_static()
 void
 set_backtrack_limit()
 {
-    //backtrack_limit = 50;
-    backtrack_limit = ncktin * 5/2;
+    backtrack_limit = 400;
+    //backtrack_limit = ncktin * 5/2;
 
 }
 
@@ -128,7 +128,7 @@ test()
     int  pi_x_num();
     int  pi_x_num_static();
     void fault_sim_a_vector_frame01_X();
-    void fault_sim_a_vector_Moon();
+    int fault_sim_a_vector_Moon();
 
     in_vector_no = 0;
     total_detect_num = 0;
@@ -206,7 +206,7 @@ test()
                     // fault sim and fault drop 
                     
                     fault_sim_a_vector_Moon(&current_detect_num);
-                    display_io_Moon();
+                    //display_io_Moon();
                     add_pat_ini_test_set_Moon();
                     in_vector_no++;
                     continue;
@@ -248,7 +248,7 @@ test()
                 {
                     // fault sim and fault drop 
                     fault_sim_a_vector_Moon(&current_detect_num);
-                    display_io_Moon();
+                    //display_io_Moon();
                     add_pat_ini_test_set_Moon();
                     in_vector_no++;
                     SecondFault = 1;
@@ -276,7 +276,7 @@ test()
                 }
 
                 fault_sim_a_vector_Moon(&current_detect_num);
-                display_io_Moon();
+                //display_io_Moon();
                 add_pat_ini_test_set_Moon();
                 in_vector_no++;
             }
@@ -366,7 +366,7 @@ test()
                 }
                 */
                 fault_sim_a_vector_Moon(&current_detect_num);
-                display_io_Moon();
+                //display_io_Moon();
                 add_pat_ini_test_set_Moon();
                 in_vector_no++;
                 fault_under_test = choose_primary_fault();
@@ -376,80 +376,6 @@ test()
         printf("NEW pattern num:%d\n", in_vector_no);
         return;
     }
-
-
-    if( tdfatpg_only )
-    {
-
-        printf("tdfatpg start\n");
-
-        //display_circuit();
-        while(fault_under_test) {
-            
-            if( fault_under_test -> test_tried || fault_under_test -> detect == TRUE ) 
-            {
-                fault_under_test = choose_second_fault( fault_under_test );
-                continue;
-            }
-            //display_fault( fault_under_test ); 
-            switch(podem_frame01(fault_under_test,&current_backtracks)) {
-                case TRUE:
-                    /*run a fault simulation, drop ALL detected faults */
-                    fault_sim_a_vector_frame01( fault_under_test ,&current_detect_num);
-                    undetect_fault = choose_second_fault( fault_under_test );
-                    total_detect_num += current_detect_num;
-                    break;
-                case FALSE:  // 
-                    fault_under_test->detect = REDUNDANT;
-                    no_of_redundant_faults++;
-                    fault_under_test->test_tried = TRUE; // deal later
-                    undetect_fault = choose_second_fault( fault_under_test );
-                    remove_fault( fault_under_test, 1 );
-
-                    break;
-
-                case MAYBE:  //
-                    no_of_aborted_faults++;
-                    fault_under_test->test_tried = TRUE; // deal later
-                    undetect_fault = choose_second_fault( fault_under_test );
-                    break;
-            }
-            fault_under_test = undetect_fault;
-/*
-            for( i = 0 ; i < detection_num; i++ )
-            {
-                printf("  det %d:", i );
-                for( ftemp = det_flist[i]; ftemp; ftemp = ftemp -> pnext )
-                    printf( "  %d", ftemp -> fault_no );
-                printf( "\n");
-            }
-            printf( "\n");
-*/
-
-
-            total_no_of_backtracks += current_backtracks; // accumulate number of backtracks
-            no_of_calls++;
-        }
-
-
-        fault_under_test = choose_primary_fault();
-        while(fault_under_test) {
-            fault_under_test -> detect = 0;
-            fault_under_test = choose_second_fault( fault_under_test);
-        }
-
-        display_undetect(undetect_fault);
-        fprintf(stdout,"\n");
-        fprintf(stdout,"#number of aborted faults = %d\n",no_of_aborted_faults);
-        fprintf(stdout,"\n");
-        fprintf(stdout,"#number of redundant faults = %d\n",no_of_redundant_faults);
-        fprintf(stdout,"\n");
-        fprintf(stdout,"#number of calling podem1 = %d\n",no_of_calls);
-        fprintf(stdout,"\n");
-        fprintf(stdout,"#total number of backtracks = %d\n",total_no_of_backtracks);
-        return;
-    }
-
 
 
 
